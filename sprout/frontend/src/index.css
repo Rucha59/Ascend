@@ -1,57 +1,157 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&family=Fraunces:opsz,wght@9..144,700;9..144,900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* ── Default / Blush (light pink-purple) ──────────────────── */
 :root {
-  --bg: #fbf4f8;
-  --surface: #ffffff;
-  --surface-2: #fdeff6;
-  --border: #f3dcea;
-  --text: #4a3b4d;
+  --bg:         #fbf4f8;
+  --surface:    #ffffff;
+  --surface-2:  #fdeff6;
+  --surface-3:  #f7e4f1;
+  --border:     #f3dcea;
+  --text:       #4a3b4d;
   --text-muted: #9b87a0;
+  --accent:     #c45e9e;
+  --accent-fg:  #ffffff;
+  --green:      #4f9e6f;
+  --red:        #c24a6a;
+  --blue:       #4a72c4;
+  --ring:       rgba(196,94,158,.3);
+  /* aliases so components using either name work */
+  --background: var(--bg);
 }
 
+/* ── Dark ─────────────────────────────────────────────────── */
 .dark {
-  --bg: #241b29;
-  --surface: #332638;
-  --surface-2: #3d2e44;
-  --border: #4a3a52;
-  --text: #f6ecf4;
+  --bg:         #241b29;
+  --surface:    #332638;
+  --surface-2:  #3d2e44;
+  --surface-3:  #473650;
+  --border:     #4a3a52;
+  --text:       #f6ecf4;
   --text-muted: #c0a9c2;
+  --accent:     #e07fc0;
+  --accent-fg:  #1e0f1e;
+  --green:      #7ec99a;
+  --red:        #f07090;
+  --blue:       #80a4f0;
+  --ring:       rgba(224,127,192,.3);
+  --background: var(--bg);
 }
 
+/* ── Forest ───────────────────────────────────────────────── */
+.forest {
+  --bg:         #0e1a14;
+  --surface:    #172419;
+  --surface-2:  #1f3024;
+  --surface-3:  #273c2e;
+  --border:     #2f4836;
+  --text:       #d4edda;
+  --text-muted: #6da07a;
+  --accent:     #5fd88a;
+  --accent-fg:  #05180d;
+  --green:      #7de882;
+  --red:        #f07070;
+  --blue:       #7ab8ff;
+  --ring:       rgba(95,216,138,.3);
+  --background: var(--bg);
+}
+
+/* ── Ocean ────────────────────────────────────────────────── */
+.ocean {
+  --bg:         #07101f;
+  --surface:    #0e1c30;
+  --surface-2:  #152540;
+  --surface-3:  #1c2e50;
+  --border:     #1f3a60;
+  --text:       #cce4ff;
+  --text-muted: #5a80aa;
+  --accent:     #38c0d8;
+  --accent-fg:  #010e1c;
+  --green:      #4acca0;
+  --red:        #f07090;
+  --blue:       #70b4ff;
+  --ring:       rgba(56,192,216,.3);
+  --background: var(--bg);
+}
+
+/* ── Dusk (deep purple) ───────────────────────────────────── */
+.dusk {
+  --bg:         #120f1e;
+  --surface:    #1b1730;
+  --surface-2:  #242040;
+  --surface-3:  #2e2950;
+  --border:     #383360;
+  --text:       #e8e0ff;
+  --text-muted: #7a6eb0;
+  --accent:     #b48aff;
+  --accent-fg:  #130820;
+  --green:      #8adda0;
+  --red:        #ff7aaa;
+  --blue:       #7ab4ff;
+  --ring:       rgba(180,138,255,.3);
+  --background: var(--bg);
+}
+
+/* ── Paper (warm sepia) ───────────────────────────────────── */
+.paper {
+  --bg:         #f5f0e8;
+  --surface:    #fffdf7;
+  --surface-2:  #edeae0;
+  --surface-3:  #e4dfd4;
+  --border:     #d8d0c0;
+  --text:       #2a2218;
+  --text-muted: #9a9080;
+  --accent:     #c05a20;
+  --accent-fg:  #fff8ef;
+  --green:      #437830;
+  --red:        #b03050;
+  --blue:       #2848a8;
+  --ring:       rgba(192,90,32,.3);
+  --background: var(--bg);
+}
+
+/* ── Base ─────────────────────────────────────────────────── */
 body {
-  font-family: "Nunito", sans-serif;
+  font-family: "Nunito", system-ui, sans-serif;
   background: var(--bg);
   color: var(--text);
-  transition: background-color 0.2s ease, color 0.2s ease;
+  transition: background-color 0.25s ease, color 0.2s ease;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Minimal markdown rendering for the journal's free-write preview — no typography plugin installed. */
-.markdown-preview p {
-  margin: 0 0 0.6em;
+.font-display {
+  font-family: "Fraunces", Georgia, serif;
 }
-.markdown-preview p:last-child {
-  margin-bottom: 0;
+
+/* ── Scrollbars ───────────────────────────────────────────── */
+* { scrollbar-width: thin; scrollbar-color: transparent transparent; }
+*:hover { scrollbar-color: rgba(128,128,128,.2) transparent; }
+
+/* ── Focus ring ───────────────────────────────────────────── */
+*:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
+
+/* ── Minimal markdown rendering ───────────────────────────── */
+.markdown-preview p { margin: 0 0 0.6em; }
+.markdown-preview p:last-child { margin-bottom: 0; }
 .markdown-preview ul,
-.markdown-preview ol {
-  margin: 0 0 0.6em;
-  padding-left: 1.25em;
+.markdown-preview ol { margin: 0 0 0.6em; padding-left: 1.25em; }
+.markdown-preview ul { list-style: disc; }
+.markdown-preview ol { list-style: decimal; }
+.markdown-preview strong { font-weight: 700; }
+.markdown-preview em { font-style: italic; }
+.markdown-preview a { color: var(--accent); text-decoration: underline; }
+
+/* ── Theme transition ─────────────────────────────────────── */
+*, *::before, *::after {
+  transition-property: background-color, border-color;
+  transition-duration: 0.2s;
+  transition-timing-function: ease;
 }
-.markdown-preview ul {
-  list-style: disc;
-}
-.markdown-preview ol {
-  list-style: decimal;
-}
-.markdown-preview strong {
-  font-weight: 700;
-}
-.markdown-preview em {
-  font-style: italic;
-}
-.markdown-preview a {
-  color: #ff8b6b;
-  text-decoration: underline;
-}
+/* Don't animate everything — only structural props above */
+input, button, a { transition: none; }

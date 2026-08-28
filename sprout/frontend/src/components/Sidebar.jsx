@@ -1,14 +1,15 @@
 import { NavLink } from "react-router-dom";
-import { Home, ListChecks, BookOpen, ListTodo, FolderKanban, User, LogOut, Sprout as SproutIcon } from "lucide-react";
+import { Home, ListChecks, BookOpen, ListTodo, FolderKanban, BarChart3, User, LogOut, Sprout as SproutIcon } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 const LINKS = [
-  { to: "/",         label: "Dashboard", Icon: Home,          end: true },
-  { to: "/habits",   label: "Habits",    Icon: ListChecks,    end: false },
-  { to: "/todos",    label: "To-Do",     Icon: ListTodo,      end: false },
-  { to: "/projects", label: "Projects",  Icon: FolderKanban,  end: false },
-  { to: "/journal",  label: "Journal",   Icon: BookOpen,      end: false },
-  { to: "/profile",  label: "Profile",   Icon: User,          end: false },
+  { to: "/",          label: "Dashboard", Icon: Home,          end: true  },
+  { to: "/habits",    label: "Habits",    Icon: ListChecks,    end: false },
+  { to: "/todos",     label: "To-Do",     Icon: ListTodo,      end: false },
+  { to: "/projects",  label: "Projects",  Icon: FolderKanban,  end: false },
+  { to: "/journal",   label: "Journal",   Icon: BookOpen,      end: false },
+  { to: "/analytics", label: "Analytics", Icon: BarChart3,     end: false },
+  { to: "/profile",   label: "Profile",   Icon: User,          end: false },
 ];
 
 export default function Sidebar() {

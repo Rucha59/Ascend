@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 import api from "../api/axios";
 
 export default function Profile() {
   const { user, setUser } = useAuth();
+  const { theme, setTheme, availableThemes } = useTheme();
   const [form, setForm] = useState({
     name: user?.name || "",
     bio: user?.bio || "",
@@ -55,6 +57,22 @@ export default function Profile() {
             className="w-full mt-1 px-3 py-2.5 rounded-xl text-sm outline-none"
             style={{ background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--text)" }}
           />
+        </label>
+
+        <label className="text-sm" style={{ color: "var(--text-muted)" }}>
+          Theme
+          <select
+            value={theme}
+            onChange={(e) => setTheme(e.target.value)}
+            className="w-full mt-1 px-3 py-2.5 rounded-xl text-sm outline-none"
+            style={{ background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--text)" }}
+          >
+            {availableThemes.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
         </label>
 
         <div className="flex items-center gap-3 mt-2">

@@ -10,6 +10,7 @@ import Habits from "./pages/Habits";
 import Todos from "./pages/Todos";
 import Projects from "./pages/Projects";
 import Journal from "./pages/Journal";
+import Analytics from "./pages/Analytics";
 import Profile from "./pages/Profile";
 
 export default function App() {
@@ -26,8 +27,9 @@ export default function App() {
                   <Route path="/habits" element={<Habits />} />
                   <Route path="/todos"    element={<Todos />} />
                   <Route path="/projects" element={<Projects />} />
-                  <Route path="/journal"  element={<Journal />} />
-                  <Route path="/profile"  element={<Profile />} />
+                  <Route path="/journal"   element={<Journal />} />
+                  <Route path="/analytics" element={<Analytics />} />
+                  <Route path="/profile"   element={<Profile />} />
                 </Route>
               </Route>
             </Routes>
