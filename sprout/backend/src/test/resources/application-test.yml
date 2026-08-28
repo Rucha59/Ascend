@@ -1,0 +1,11 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/sprout_test
+    username: postgres
+    password: postgres
+sprout:
+  jwt:
+    secret: test-secret-key-at-least-32-characters-long-for-hmac
+    expiration-ms: 3600000
+  cors:
+    allowed-origin: http://localhost:5173

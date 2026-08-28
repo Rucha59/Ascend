@@ -1,0 +1,42 @@
+spring:
+  config:
+    import:
+      - "optional:file:./.env[.properties]"
+      - "optional:file:../.env[.properties]"
+  application:
+    name: sprout-backend
+  datasource:
+    url: jdbc:postgresql://localhost:5432/${DB_NAME:Sprout}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:}
+  jpa:
+    hibernate:
+      # Fine for local Phase 1 dev. Swap for Flyway/Liquibase migrations before this touches production.
+      ddl-auto: update
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+  servlet:
+    multipart:
+      # A little above the app's own 8MB check, so that check fires first with a friendlier message.
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+server:
+  port: 8080
+
+sprout:
+  challenge:
+    total-days: ${CHALLENGE_TOTAL_DAYS:75}
+  uploads:
+    # Where journal images are written on disk. Point this somewhere persistent outside the repo
+    # in any real deployment — it is not backed up or synced anywhere by default.
+    dir: ${UPLOADS_DIR:./uploads}
+  jwt:
+    # Override via env var in real environments — this default is only here so `mvn spring-boot:run` works out of the box.
+    secret: ${JWT_SECRET:sprout-dev-secret-change-me-please-this-must-be-at-least-32-bytes-long}
+    expiration-ms: ${JWT_EXPIRATION_MS:86400000} # 24h
+  cors:
+    allowed-origin: ${CORS_ALLOWED_ORIGIN:http://localhost:5173}
