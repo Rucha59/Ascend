@@ -23,6 +23,16 @@ spring:
       # A little above the app's own 8MB check, so that check fires first with a friendlier message.
       max-file-size: 10MB
       max-request-size: 10MB
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - email
+              - profile
 
 server:
   port: 8080
@@ -40,3 +50,5 @@ sprout:
     expiration-ms: ${JWT_EXPIRATION_MS:86400000} # 24h
   cors:
     allowed-origin: ${CORS_ALLOWED_ORIGIN:http://localhost:5173}
+  oauth2:
+    frontend-redirect-uri: ${OAUTH2_FRONTEND_REDIRECT_URI:http://localhost:5173/oauth2/callback}

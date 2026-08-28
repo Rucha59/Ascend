@@ -12,6 +12,7 @@ import Projects from "./pages/Projects";
 import Journal from "./pages/Journal";
 import Analytics from "./pages/Analytics";
 import Profile from "./pages/Profile";
+import OAuth2Callback from "./pages/OAuth2Callback";
 
 export default function App() {
   return (
@@ -20,6 +21,7 @@ export default function App() {
           <BrowserRouter>
             <Routes>
               <Route path="/login" element={<Login />} />
+              <Route path="/oauth2/callback" element={<OAuth2Callback />} />
               <Route path="/register" element={<Register />} />
               <Route element={<ProtectedRoute />}>
                 <Route element={<Layout />}>

@@ -3,6 +3,11 @@ import { Link, useNavigate } from "react-router-dom";
 import { Sprout } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
+function getBackendOrigin() {
+  const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8080/api";
+  return apiUrl.replace(/\/api\/?$/, "");
+}
+
 export default function Register() {
   const { register } = useAuth();
   const navigate = useNavigate();
@@ -30,6 +35,10 @@ export default function Register() {
     }
   };
 
+  const signInWithGoogle = () => {
+    window.location.href = `${getBackendOrigin()}/oauth2/authorization/google`;
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-10" style={{ background: "var(--bg)" }}>
       <div className="w-full max-w-sm rounded-3xl p-8" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
@@ -46,6 +55,15 @@ export default function Register() {
             {error}
           </p>
         )}
+
+        <button
+          type="button"
+          onClick={signInWithGoogle}
+          className="w-full font-display font-bold text-sm px-4 py-2.5 rounded-full mb-4"
+          style={{ background: "var(--surface-2)", color: "var(--text)", border: "1px solid var(--border)" }}
+        >
+          Continue with Google
+        </button>
 
         <form onSubmit={submit} className="grid gap-3">
           <div>
