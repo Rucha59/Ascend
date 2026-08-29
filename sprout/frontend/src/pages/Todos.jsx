@@ -21,7 +21,7 @@ export default function Todos() {
     const [creating, setCreating] = useState(false);
     const [editingId, setEditingId] = useState(null);
     const [editForm, setEditForm] = useState(EMPTY_FORM);
-
+    const [showCreateForm, setShowCreateForm] = useState(false);
     const load = () => {
         setLoading(true);
         const params = filter === "all" ? {} : { completed: filter === "done" };
@@ -50,10 +50,13 @@ export default function Todos() {
             });
             console.log("Todo created", created);
             setForm(EMPTY_FORM);
+            setShowCreateForm(false);
             load();
         } catch (err) {
             console.error("Todo create failed", err.response?.status, err.response?.data || err.message);
-            setError(err.response?.data?.message || "Couldn't create that task.");
+            setError(err.response?.status === 401
+                ? "Your session looks invalid or expired. Please log in again."
+                : (err.response?.data?.message || "Couldn't create that task."));
         } finally {
             setCreating(false);
         }
@@ -120,61 +123,106 @@ export default function Todos() {
                 <p className="text-sm px-3 py-2 rounded-xl" style={{ background: "#FF88AA22", color: "#D1467A" }}>{error}</p>
             )}
 
-            <form
-                onSubmit={submitCreate}
-                className="rounded-3xl p-5 grid gap-3"
-                style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
-            >
-                <h2 className="font-display text-sm" style={{ color: "var(--text-muted)" }}>New task</h2>
-                <input
-                    required
-                    placeholder="Title, e.g. Renew passport"
-                    value={form.title}
-                    onChange={(e) => setForm({ ...form, title: e.target.value })}
-                    className="px-3 py-2.5 rounded-xl text-sm outline-none"
-                    style={{ background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--text)" }}
-                />
-                <textarea
-                    rows={2}
-                    placeholder="Notes (optional)"
-                    value={form.notes}
-                    onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                    className="px-3 py-2.5 rounded-xl text-sm outline-none resize-none"
-                    style={{ background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--text)" }}
-                />
-                <div className="flex flex-wrap gap-3">
+            {!showCreateForm ? (
+                <button
+                    type="button"
+                    onClick={() => setShowCreateForm(true)}
+                    className="flex items-center gap-2 px-5 py-3 rounded-2xl font-semibold transition"
+                    style={{
+                        background: "#FF8B6B",
+                        color: "#3A1F16",
+                        width: "fit-content"
+                    }}
+                >
+                    <Plus size={18} />
+                    Create Task
+                </button>
+            ) : (
+                <form
+                    onSubmit={submitCreate}
+                    className="rounded-3xl p-5 grid gap-3"
+                    style={{
+                        background: "var(--surface)",
+                        border: "1px solid var(--border)"
+                    }}
+                >
+                    <h2 className="font-display text-lg font-bold" style={{ color: "var(--text)" }}>
+                        Create task
+                    </h2>
+
                     <input
-                        type="date"
-                        value={form.dueDate}
-                        onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
+                        required
+                        placeholder="Task title"
+                        value={form.title}
+                        onChange={(e) => setForm({ ...form, title: e.target.value })}
                         className="px-3 py-2.5 rounded-xl text-sm outline-none"
                         style={{ background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--text)" }}
                     />
-                    <select
-                        value={form.priority}
-                        onChange={(e) => setForm({ ...form, priority: e.target.value })}
-                        className="px-3 py-2.5 rounded-xl text-sm outline-none"
+                    <textarea
+                        rows={3}
+                        placeholder="Notes"
+                        value={form.notes}
+                        onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                        className="px-3 py-2.5 rounded-xl text-sm outline-none resize-none"
                         style={{ background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--text)" }}
-                    >
-                        {PRIORITIES.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
-                    </select>
+                    />
+                    <div className="flex flex-wrap gap-2">
+                        <input
+                            type="date"
+                            value={form.dueDate}
+                            onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
+                            className="px-3 py-2.5 rounded-xl text-sm outline-none"
+                            style={{ background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--text)" }}
+                        />
+                        <select
+                            value={form.priority}
+                            onChange={(e) => setForm({ ...form, priority: e.target.value })}
+                            className="px-3 py-2.5 rounded-xl text-sm outline-none"
+                            style={{ background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--text)" }}
+                        >
+                            {PRIORITIES.map((p) => (
+                                <option key={p.id} value={p.id}>{p.label}</option>
+                            ))}
+                        </select>
+                    </div>
                     <input
                         placeholder="Tags, comma separated"
                         value={form.tagsText}
                         onChange={(e) => setForm({ ...form, tagsText: e.target.value })}
-                        className="flex-1 min-w-[160px] px-3 py-2.5 rounded-xl text-sm outline-none"
+                        className="px-3 py-2.5 rounded-xl text-sm outline-none"
                         style={{ background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--text)" }}
                     />
-                </div>
-                <button
-                    type="submit"
-                    disabled={creating}
-                    className="font-display font-bold text-sm px-4 py-2.5 rounded-full justify-self-start flex items-center gap-1.5 disabled:opacity-60"
-                    style={{ background: "#FF8B6B", color: "#3A1F16" }}
-                >
-                    <Plus size={15} /> {creating ? "Adding…" : "Add task"}
-                </button>
-            </form>
+
+                    <div className="flex gap-3 mt-2">
+                        <button
+                            type="submit"
+                            disabled={creating}
+                            className="px-5 py-2.5 rounded-full font-semibold"
+                            style={{
+                                background: "#FF8B6B",
+                                color: "#3A1F16"
+                            }}
+                        >
+                            {creating ? "Creating..." : "Create task"}
+                        </button>
+
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setShowCreateForm(false);
+                                setForm(EMPTY_FORM);
+                            }}
+                            className="px-5 py-2.5 rounded-full"
+                            style={{
+                                background: "var(--surface-2)",
+                                color: "var(--text)"
+                            }}
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            )}
 
             <div className="flex gap-2">
                 {[["open", "Open"], ["done", "Done"], ["all", "All"]].map(([id, label]) => (
@@ -242,10 +290,10 @@ export default function Todos() {
                                                 style={{ background: "var(--surface-2)", border: "1px solid var(--border)", color: "var(--text)" }}
                                             />
                                             <div className="flex items-center gap-1.5 ml-auto">
-                                                <button onClick={() => submitEdit(t.id)} className="p-1.5 rounded-lg" style={{ background: "#8FBE7A22" }} aria-label="Save">
+                                                <button type="button" onClick={() => submitEdit(t.id)} className="p-1.5 rounded-lg" style={{ background: "#8FBE7A22" }} aria-label="Save">
                                                     <Check size={15} color="#8FBE7A" />
                                                 </button>
-                                                <button onClick={() => setEditingId(null)} className="p-1.5 rounded-lg" style={{ background: "var(--surface-2)" }} aria-label="Cancel">
+                                                <button type="button" onClick={() => setEditingId(null)} className="p-1.5 rounded-lg" style={{ background: "var(--surface-2)" }} aria-label="Cancel">
                                                     <X size={15} style={{ color: "var(--text-muted)" }} />
                                                 </button>
                                             </div>
@@ -253,7 +301,7 @@ export default function Todos() {
                                     </div>
                                 ) : (
                                     <div className="flex items-start gap-3">
-                                        <button onClick={() => handleToggle(t.id)} className="mt-0.5 shrink-0" aria-label="Toggle complete">
+                                        <button type="button" onClick={() => handleToggle(t.id)} className="mt-0.5 shrink-0" aria-label="Toggle complete">
                                             <div
                                                 className="w-5 h-5 rounded-md flex items-center justify-center"
                                                 style={{ border: `2px solid ${t.completed ? "#8FBE7A" : "var(--border)"}`, background: t.completed ? "#8FBE7A" : "transparent" }}
@@ -285,10 +333,10 @@ export default function Todos() {
                                                 ))}
                                             </div>
                                         </div>
-                                        <button onClick={() => startEdit(t)} className="p-1.5 rounded-lg shrink-0" style={{ color: "var(--text-muted)" }} aria-label="Edit">
+                                        <button type="button" onClick={() => startEdit(t)} className="p-1.5 rounded-lg shrink-0" style={{ color: "var(--text-muted)" }} aria-label="Edit">
                                             <Pencil size={15} />
                                         </button>
-                                        <button onClick={() => remove(t.id)} className="p-1.5 rounded-lg shrink-0" style={{ color: "#FF88AA" }} aria-label="Delete">
+                                        <button type="button" onClick={() => remove(t.id)} className="p-1.5 rounded-lg shrink-0" style={{ color: "#FF88AA" }} aria-label="Delete">
                                             <Trash2 size={15} />
                                         </button>
                                     </div>

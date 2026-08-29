@@ -63,9 +63,15 @@ public class AnalyticsService {
         }
 
         // ── Streaks ──────────────────────────────────────────────────────
-        List<LocalDate> completedDates = habitLogRepository.findCompletedDatesByUserIdBetween(userId, heatmapStart, today);
-        Set<LocalDate> completedSet = new HashSet<>(completedDates);
-        StreakResult streaks = computeStreaks(completedSet, today);
+        Map<LocalDate, DayCompletion> dayCompletionMap = new HashMap<>();
+        for (HabitLog log : allLogs) {
+            dayCompletionMap.computeIfAbsent(log.getLogDate(), d -> new DayCompletion()).accept(log);
+        }
+        Set<LocalDate> completedDates = dayCompletionMap.entrySet().stream()
+                .filter(e -> e.getValue().isFullyCompleted())
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toCollection(TreeSet::new));
+        StreakResult streaks = computeStreaks(completedDates, today);
 
         // Persist updated streaks back to the User row
         if (streaks.current() != user.getCurrentStreak() || streaks.longest() != user.getLongestStreak()) {
@@ -160,7 +166,7 @@ public class AnalyticsService {
         }
 
         // Longest streak: scan through sorted dates
-        List<LocalDate> sorted = completedDates.stream().sorted().toList();
+        List<LocalDate> sorted = new ArrayList<>(completedDates);
         int longest = 0, run = 0;
         LocalDate prev = null;
         for (LocalDate d : sorted) {
@@ -174,6 +180,22 @@ public class AnalyticsService {
         }
 
         return new StreakResult(current, Math.max(current, longest));
+    }
+
+    private static final class DayCompletion {
+        private int total;
+        private int completed;
+
+        void accept(HabitLog log) {
+            total++;
+            if (log.getStatus() == com.sprout.backend.entity.HabitStatus.COMPLETED) {
+                completed++;
+            }
+        }
+
+        boolean isFullyCompleted() {
+            return total > 0 && total == completed;
+        }
     }
 
     private List<WeeklyBarResponse> buildDailyBars(

@@ -1,585 +1,413 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import {
-    CheckCircle2, XCircle, MinusCircle, Circle, Plus, BookOpen, ChevronRight,
-    ChevronDown, X, Image as ImageIcon, Check,
+  ArrowRight,
+  BookOpen,
+  Check,
+  CheckCircle2,
+  Circle,
+  Clock3,
+  MinusCircle,
+  ChevronRight,
+  Target,
+  TrendingUp,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import { getToday } from "../api/days";
-import { markHabitLog, addHabitStat, deleteHabitStat, addHabitPhoto, deleteHabitPhoto } from "../api/habits";
-import { getCalendarStatus, getCalendarAuthUrl, disconnectCalendar } from "../api/calendar";
+import { getAnalytics } from "../api/analytics";
 import { getTodayTodos, toggleTodo } from "../api/todos";
+import { markHabitLog } from "../api/habits";
 import { getHabitIcon } from "../lib/habitIcons";
-import AuthImage from "../components/AuthImage";
 
 const CYCLE = ["COMPLETED", "MISSED", "SKIPPED"];
+
 function nextStatus(current) {
-    if (current === "PENDING") return "COMPLETED";
-    return CYCLE[(CYCLE.indexOf(current) + 1) % CYCLE.length];
+  if (current === "PENDING") return "COMPLETED";
+  return CYCLE[(CYCLE.indexOf(current) + 1) % CYCLE.length];
 }
 
-function ProgressRing({ pct, size = 72, stroke = 7 }) {
-    const r = size / 2 - stroke / 2 - 2;
-    const c = 2 * Math.PI * r;
-    return (
-        <div className="relative shrink-0" style={{ width: size, height: size }}>
-            <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-                <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--border)" strokeWidth={stroke} />
-                <circle
-                    cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#FF8B6B" strokeWidth={stroke}
-                    strokeDasharray={c} strokeDashoffset={c - (c * pct) / 100} strokeLinecap="round"
-                    transform={`rotate(-90 ${size / 2} ${size / 2})`} style={{ transition: "stroke-dashoffset .5s ease" }}
-                />
-            </svg>
-            <div className="absolute inset-0 flex items-center justify-center">
-                <span className="font-display font-bold text-sm" style={{ color: "var(--text)" }}>{pct}%</span>
-            </div>
-        </div>
-    );
+function ProgressRing({ pct }) {
+  const size = 212;
+  const stroke = 14;
+  const r = size / 2 - stroke / 2;
+  const c = 2 * Math.PI * r;
+  return (
+    <div className="relative" style={{ width: size, height: size }}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="#e5ded2" strokeWidth={stroke} />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          fill="none"
+          stroke="#C85C22"
+          strokeWidth={stroke}
+          strokeDasharray={c}
+          strokeDashoffset={c - (c * pct) / 100}
+          strokeLinecap="round"
+          transform={`rotate(-90 ${size / 2} ${size / 2})`}
+        />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className="font-black tracking-[-0.05em]" style={{ color: "#C85C22", fontSize: 54, lineHeight: 1 }}>
+          {Math.round(pct)}%
+        </span>
+        <span className="mt-1 text-[12px] font-semibold tracking-[0.28em]" style={{ color: "#9b8f81" }}>
+          DONE
+        </span>
+      </div>
+    </div>
+  );
 }
 
-function StatusIcon({ status }) {
-    if (status === "COMPLETED") return <CheckCircle2 size={22} color="#8FBE7A" fill="#8FBE7A22" />;
-    if (status === "MISSED") return <XCircle size={22} color="#FF88AA" />;
-    if (status === "SKIPPED") return <MinusCircle size={22} color="var(--text-muted)" />;
-    return <Circle size={22} color="var(--border)" />;
+function StatCard({ icon: Icon, value, label }) {
+  return (
+    <div className="rounded-3xl p-4 md:p-5" style={{ background: "#fcf8f1", border: "1px solid #dbcfbf" }}>
+      <Icon size={18} color="#C85C22" />
+      <div className="mt-6 font-black text-[28px] tracking-[-0.05em]" style={{ color: "#1a1714" }}>{value}</div>
+      <div className="mt-1 text-[12px] font-bold tracking-[0.22em]" style={{ color: "#9b8f81" }}>{label}</div>
+    </div>
+  );
 }
 
-function formatEventTime(item) {
-    if (item.allDay) return "All day";
-    return new Date(item.time).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+function HabitStatusIcon({ status }) {
+  if (status === "COMPLETED") return <CheckCircle2 size={26} color="#4b7a36" />;
+  if (status === "SKIPPED") return <MinusCircle size={26} color="#9b8f81" />;
+  return <Circle size={26} color="#d0c6b7" />;
+}
+
+function StatusPill({ status }) {
+  const map = {
+    COMPLETED: { bg: "#fde3d4", fg: "#C85C22", label: "DONE" },
+    PENDING: { bg: "#e8e1fb", fg: "#5f49d6", label: "GO" },
+    SKIPPED: { bg: "#e8e3da", fg: "#8b8174", label: "SKIP" },
+    MISSED: { bg: "#e8e3da", fg: "#8b8174", label: "SKIP" },
+  };
+  const pill = map[status] || map.PENDING;
+  return <span className="px-3 py-1 rounded-full text-[12px] font-bold" style={{ background: pill.bg, color: pill.fg }}>{pill.label}</span>;
+}
+
+function TaskPriority({ priority }) {
+  if (priority === "HIGH") return <span className="text-[13px] font-bold" style={{ color: "#C85C22" }}>HIGH</span>;
+  if (priority === "MED" || priority === "MEDIUM") return <span className="text-[13px] font-bold" style={{ color: "#7a6f64" }}>MED</span>;
+  return <span className="text-[13px] font-bold px-2 py-0.5 rounded-full" style={{ background: "#e7dfd2", color: "#9b8f81" }}>LOW</span>;
 }
 
 export default function Dashboard() {
-    const { user } = useAuth();
-    const [searchParams, setSearchParams] = useSearchParams();
+  const { user } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [today, setToday] = useState(null);
+  const [analytics, setAnalytics] = useState(null);
+  const [todoItems, setTodoItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-    const [today, setToday] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
-    const [banner, setBanner] = useState(null);
+  const reload = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const [day, analyticsData, todos] = await Promise.all([getToday(), getAnalytics(), getTodayTodos()]);
+      setToday(day);
+      setAnalytics(analyticsData);
+      setTodoItems(todos);
+    } catch {
+      setError("Couldn't load the dashboard right now.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const [noteDrafts, setNoteDrafts] = useState({});
-    const [savingId, setSavingId] = useState(null);
-    const [expandedId, setExpandedId] = useState(null);
-    const [statForms, setStatForms] = useState({});
-    const [uploadingPhotoId, setUploadingPhotoId] = useState(null);
+  useEffect(() => {
+    const calendarParam = searchParams.get("calendar");
+    if (!calendarParam) return;
+    const next = new URLSearchParams(searchParams);
+    next.delete("calendar");
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
 
-    const [calendarStatus, setCalendarStatus] = useState(null);
-    const [todoItems, setTodoItems] = useState([]);
-    const [todoItemsLoading, setTodoItemsLoading] = useState(false);
-    const [connecting, setConnecting] = useState(false);
+  useEffect(() => {
+    reload();
+  }, []);
 
-    // Read the ?calendar=connected|error redirect from the OAuth callback once, then clean the URL.
-    useEffect(() => {
-        const calendarParam = searchParams.get("calendar");
-        if (!calendarParam) return;
-        setBanner(
-            calendarParam === "connected"
-                ? { type: "success", text: "Google Calendar connected." }
-                : { type: "error", text: "Couldn't connect Google Calendar. Please try again." }
+  const displayName = useMemo(() => (user?.name || "ALEX").split(" ")[0].toUpperCase(), [user]);
+  const streak = analytics?.streaks?.currentStreak ?? 0;
+  const dayNumber = analytics?.streaks?.challengeDay ?? today?.dayNumber ?? 47;
+  const totalDays = analytics?.streaks?.totalChallengeDays ?? today?.totalDays ?? 75;
+  const completedCount = today?.completedCount ?? analytics?.streaks?.totalCompletedDays ?? 0;
+  const totalCount = today?.totalCount ?? today?.habits?.length ?? 0;
+  const pct = today?.completionPercentage ?? (totalCount ? Math.round((completedCount * 100) / totalCount) : 0);
+  const quote = today?.quote || "Lock in. Make it count.";
+  const habits = today?.habits || [];
+  const greetings = [
+    "Welcome back",
+    "Ready for today",
+    "Let's build momentum",
+    "Keep growing",
+    "Good to see you",
+    "One step closer",
+    "Let's make today count"
+  ];
+
+  const greeting =
+      greetings[Math.floor(Math.random() * greetings.length)];
+
+    const handleHabitClick = async (habit) => {
+        const newStatus = nextStatus(habit.status);
+
+        setToday((prev) => {
+            const updatedHabits = prev.habits.map((h) =>
+                h.habitId === habit.habitId ? { ...h, status: newStatus } : h
+            );
+            const completedCount = updatedHabits.filter((h) => h.status === "COMPLETED").length;
+            const totalCount = updatedHabits.length;
+            const completionPercentage = totalCount ? Math.round((completedCount * 100) / totalCount) : 0;
+
+            return {
+                ...prev,
+                habits: updatedHabits,
+                completedCount,
+                totalCount,
+                completionPercentage,
+            };
+        });
+
+        try {
+            await markHabitLog(habit.habitId, {
+                status: newStatus,
+                note: habit.note || "",
+            });
+        } catch {
+            setError("Couldn't update that habit.");
+            await reload(true);
+        }
+    };
+
+    const handleTaskClick = async (task) => {
+        if (!task.taskId) return;
+        setTodoItems((prev) =>
+            prev.map((t) =>
+                t.taskId === task.taskId ? { ...t, completed: !t.completed } : t
+            )
         );
-        const next = new URLSearchParams(searchParams);
-        next.delete("calendar");
-        setSearchParams(next, { replace: true });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
-    const load = () => {
-        setLoading(true);
-        getToday()
-            .then((data) => {
-                setToday(data);
-                const drafts = {};
-                data.habits.forEach((h) => { drafts[h.habitId] = h.note || ""; });
-                setNoteDrafts(drafts);
-                setError("");
-            })
-            .catch(() => setError("Couldn't load today's habits. Try refreshing."))
-            .finally(() => setLoading(false));
-    };
-
-    useEffect(load, []);
-
-    useEffect(() => {
-        getCalendarStatus()
-            .then(setCalendarStatus)
-            .catch(() => setCalendarStatus({ connected: false }));
-    }, []);
-
-    const loadTodayTodos = () => {
-        setTodoItemsLoading(true);
-        getTodayTodos()
-            .then(setTodoItems)
-            .catch(() => setError("Couldn't load today's to-do list."))
-            .finally(() => setTodoItemsLoading(false));
-    };
-
-    useEffect(() => {
-        // Refetch once calendar status resolves too, since connecting/disconnecting changes what's merged in.
-        loadTodayTodos();
-    }, [calendarStatus]);
-
-    const connectCalendar = async () => {
-        setConnecting(true);
         try {
-            const url = await getCalendarAuthUrl();
-            window.location.href = url;
-        } catch (err) {
-            setError(err.response?.data?.message || "Couldn't start the Google Calendar connection.");
-            setConnecting(false);
-        }
-    };
-
-    const handleDisconnectCalendar = async () => {
-        try {
-            await disconnectCalendar();
-            setCalendarStatus({ connected: false });
+            await toggleTodo(task.taskId);
         } catch {
-            setError("Couldn't disconnect Google Calendar.");
+            setError("Couldn't update that task.");
+            await reload(true);
         }
     };
 
-    const cycle = async (habit) => {
-        setSavingId(habit.habitId);
-        try {
-            await markHabitLog(habit.habitId, { status: nextStatus(habit.status), note: noteDrafts[habit.habitId] || "" });
-            load();
-        } catch {
-            setError("Couldn't save that. Try again.");
-        } finally {
-            setSavingId(null);
-        }
-    };
+  if (loading || !today) {
+    return <div className="pt-6" style={{ color: "#8f8577" }}>Loading dashboard…</div>;
+  }
 
-    const saveNote = async (habit) => {
-        if (habit.status === "PENDING") return;
-        setSavingId(habit.habitId);
-        try {
-            await markHabitLog(habit.habitId, { status: habit.status, note: noteDrafts[habit.habitId] || "" });
-            load();
-        } catch {
-            setError("Couldn't save that note. Try again.");
-        } finally {
-            setSavingId(null);
-        }
-    };
+  const visibleTodos = todoItems.length > 0 ? todoItems : [
+    { taskId: 1, title: "Review Q3 goals", completed: true, priority: "HIGH" },
+    { taskId: 2, title: "Deep work block - 2h", completed: false, priority: "HIGH" },
+    { taskId: 3, title: "Send project update", completed: false, priority: "MED" },
+    { taskId: 4, title: "1-mile run at 7pm", completed: false, priority: "LOW" },
+  ];
 
-    const statForm = (habitId) => statForms[habitId] || { label: "", value: "", unit: "" };
-    const updateStatForm = (habitId, patch) =>
-        setStatForms((prev) => ({ ...prev, [habitId]: { ...statForm(habitId), ...patch } }));
+  return (
+    <div className="pt-8 pb-12 px-8 grid gap-8" style={{ color: "#1a1714" }}>
+      {error && (
+        <p className="text-sm px-3 py-2 rounded-xl" style={{ background: "#FF88AA22", color: "#D1467A" }}>{error}</p>
+      )}
 
-    const handleAddStat = async (habitId) => {
-        const form = statForm(habitId);
-        if (!form.label.trim() || form.value === "") return;
-        try {
-            await addHabitStat(habitId, { label: form.label.trim(), value: parseFloat(form.value), unit: form.unit.trim() || null }, today.date);
-            setStatForms((prev) => ({ ...prev, [habitId]: { label: "", value: "", unit: "" } }));
-            load();
-        } catch (err) {
-            setError(err.response?.data?.message || "Couldn't add that stat.");
-        }
-    };
+        <section className="max-w-[1100px] mx-auto w-full px-8">
+            <div className="flex items-center gap-20">
 
-    const handleDeleteStat = async (habitId, statId) => {
-        try {
-            await deleteHabitStat(habitId, statId, today.date);
-            load();
-        } catch {
-            setError("Couldn't remove that stat.");
-        }
-    };
-
-    const handleAddPhoto = async (habitId, e) => {
-        const file = e.target.files?.[0];
-        e.target.value = "";
-        if (!file) return;
-        setUploadingPhotoId(habitId);
-        try {
-            await addHabitPhoto(habitId, file, today.date);
-            load();
-        } catch (err) {
-            setError(err.response?.data?.message || "Couldn't upload that photo.");
-        } finally {
-            setUploadingPhotoId(null);
-        }
-    };
-
-    const handleDeletePhoto = async (habitId, photoId) => {
-        try {
-            await deleteHabitPhoto(habitId, photoId, today.date);
-            load();
-        } catch {
-            setError("Couldn't remove that photo.");
-        }
-    };
-
-    if (loading) {
-        return <p className="pt-6" style={{ color: "var(--text-muted)" }}>Loading today…</p>;
-    }
-    if (!today) {
-        return <p className="pt-6" style={{ color: "var(--text-muted)" }}>{error || "Something went wrong."}</p>;
-    }
-
-    return (
-        <div className="pt-6 grid gap-6 pb-10">
-            <div
-                className="rounded-3xl p-6 flex items-center gap-6 flex-wrap"
-                style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
-            >
-                <div
-                    className="w-16 h-16 rounded-full flex flex-col items-center justify-center shrink-0"
-                    style={{ background: "var(--surface-2)", border: "2px dashed #FF8B6B" }}
-                >
-                    <span className="text-[10px] font-display" style={{ color: "var(--text-muted)" }}>DAY</span>
-                    <span className="font-display font-extrabold text-lg leading-none" style={{ color: "var(--text)" }}>
-            {today.dayNumber}
-          </span>
-                </div>
-                <div className="flex-1 min-w-[200px]">
-                    <p className="text-xs font-display mb-1" style={{ color: "var(--text-muted)" }}>
-                        Welcome back, {user?.name?.split(" ")[0]}
-                    </p>
-                    <p className="italic" style={{ color: "var(--text)" }}>&ldquo;{today.quote}&rdquo;</p>
-                    <p className="text-sm mt-2" style={{ color: "var(--text-muted)" }}>
-                        {today.completedCount}/{today.totalCount} logged · Day {today.dayNumber} of {today.totalDays}
-                    </p>
-                </div>
-                <ProgressRing pct={today.completionPercentage} />
-            </div>
-
-            {banner && (
-                <p
-                    className="text-sm px-3 py-2 rounded-xl"
-                    style={
-                        banner.type === "success"
-                            ? { background: "#8FBE7A22", color: "#4C7A3B" }
-                            : { background: "#FF88AA22", color: "#D1467A" }
-                    }
-                >
-                    {banner.text}
-                </p>
-            )}
-
-            {error && (
-                <p className="text-sm px-3 py-2 rounded-xl" style={{ background: "#FF88AA22", color: "#D1467A" }}>
-                    {error}
-                </p>
-            )}
-
-            <Link
-                to={`/journal?date=${today.date}`}
-                className="rounded-3xl p-5 flex items-center gap-4"
-                style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
-            >
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: "#8FA6FF22" }}>
-                    <BookOpen size={18} color="#8FA6FF" />
-                </div>
-                <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium" style={{ color: "var(--text)" }}>
-                        {today.hasJournalEntry ? "Continue today's journal" : "Write today's journal"}
-                    </p>
-                    <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                        {today.hasJournalEntry ? "You've already started writing" : "Mood, gratitude, reflection, photos"}
-                    </p>
-                </div>
-                <ChevronRight size={18} style={{ color: "var(--text-muted)" }} />
-            </Link>
-            <Link
-                to="/projects"
-                className="rounded-3xl p-5 flex items-center gap-4"
-                style={{
-                    background: "var(--surface)",
-                    border: "1px solid var(--border)"
-                }}
-            >
-                <div
-                    className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                    style={{ background: "#FF8B6B22" }}
-                >
-                    <span style={{ color: "#FF8B6B" }}>📋</span>
-                </div>
-
-                <div className="flex-1 min-w-0">
-                    <p
-                        className="text-sm font-medium"
-                        style={{ color: "var(--text)" }}
+                {/* Day Circle */}
+                <div className="flex-shrink-0">
+                    <div
+                        style={{
+                            width: "150px",
+                            height: "150px",
+                            minWidth: "150px",   // ← prevents squishing
+                            borderRadius: "50%",
+                            background: "#FCF8F1",
+                            border: "3px solid #C85C22",
+                            boxShadow: "0 10px 25px rgba(200,92,34,0.10)",
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            justifyContent: "center",
+                        }}
                     >
-                        Projects
-                    </p>
+        <span
+            style={{
+                fontSize: "23px",
+                letterSpacing: "0.25em",
+                color: "#8e8375",
+                fontWeight: 600,
+            }}
+        >
+          DAY
+        </span>
+                        <span
+                            style={{
+                                fontSize: "72px",        // ← bumped up from 54px
+                                fontWeight: 900,
+                                color: "#C85C22",
+                                lineHeight: 1,
+                            }}
+                        >
+          {dayNumber}
+        </span>
+                    </div>
+                </div>
 
-                    <p
-                        className="text-xs"
-                        style={{ color: "var(--text-muted)" }}
+                {/* Greeting — gap is handled by gap-12 on the flex parent */}
+                <div style={{ marginLeft: "2rem" }}>
+                    <h1
+                        style={{
+                            fontSize: "clamp(1.8rem,2.5vw,2.5rem)",
+                            lineHeight: 1.2,
+                            margin: 0,
+                        }}
                     >
-                        Track your bigger goals and deadlines
+                        <span style={{ color: "#8f8577", fontWeight: 500 }}>{greeting},</span>{" "}
+                        <span style={{ color: "#1a1714", fontWeight: 800 }}>{displayName}</span>
+                    </h1>
+                    <p
+                        className="italic mt-5"
+                        style={{
+                            fontSize: "19px",
+                            color: "#8f8577",
+                            lineHeight: 1.6,
+                            maxWidth: "650px",
+                        }}
+                    >
+                        "{quote}"
                     </p>
                 </div>
 
-                <ChevronRight
-                    size={18}
-                    style={{ color: "var(--text-muted)" }}
-                />
-            </Link>
-            {/* Tasks due today, plus calendar events folded in — still a separate list from Habits below. */}
-            <div className="rounded-3xl p-5" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
-                <div className="flex items-center justify-between mb-3">
-                    <h2 className="font-display text-sm" style={{ color: "var(--text-muted)" }}>Today's To-Do</h2>
-                    <div className="flex items-center gap-3">
-                        <Link to="/todos" className="text-xs flex items-center gap-1 font-medium" style={{ color: "#FF8B6B" }}>
-                            <Plus size={14} /> Manage tasks
-                        </Link>
-                        {calendarStatus?.connected && (
-                            <button onClick={handleDisconnectCalendar} className="text-xs" style={{ color: "var(--text-muted)" }}>
-                                Disconnect calendar
-                            </button>
-                        )}
-                    </div>
-                </div>
-
-                {calendarStatus && !calendarStatus.connected && (
-                    <div className="flex items-center justify-between gap-3 flex-wrap mb-3 px-3 py-2.5 rounded-xl" style={{ background: "var(--surface-2)" }}>
-                        <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-                            Connect Google Calendar to pull today's events in here too.
-                        </p>
-                        <button
-                            onClick={connectCalendar}
-                            disabled={connecting}
-                            className="font-display font-bold text-xs px-3.5 py-2 rounded-full disabled:opacity-60 shrink-0"
-                            style={{ background: "#8FA6FF", color: "#131B33" }}
-                        >
-                            {connecting ? "Redirecting…" : "Connect Google Calendar"}
-                        </button>
-                    </div>
-                )}
-
-                {todoItemsLoading ? (
-                    <p className="text-sm" style={{ color: "var(--text-muted)" }}>Loading…</p>
-                ) : todoItems.length === 0 ? (
-                    <p className="text-sm" style={{ color: "var(--text-muted)" }}>Nothing due today.</p>
-                ) : (
-                    <div className="grid gap-1.5">
-                        {todoItems.map((item) => (
-                            <div
-                                key={item.source === "TASK" ? `task-${item.taskId}` : `event-${item.eventId}`}
-                                className="flex items-center gap-3 text-sm px-3 py-2 rounded-lg"
-                                style={{ background: "var(--surface-2)" }}
-                            >
-                                {item.source === "TASK" ? (
-                                    <button
-                                        onClick={() => toggleTodo(item.taskId).then(loadTodayTodos).catch(() => setError("Couldn't update that task."))}
-                                        className="shrink-0"
-                                        aria-label="Toggle complete"
-                                    >
-                                        <div
-                                            className="w-4.5 h-4.5 rounded-md flex items-center justify-center"
-                                            style={{
-                                                width: 18, height: 18,
-                                                border: `2px solid ${item.completed ? "#8FBE7A" : "var(--border)"}`,
-                                                background: item.completed ? "#8FBE7A" : "transparent",
-                                            }}
-                                        >
-                                            {item.completed && <Check size={11} color="#fff" />}
-                                        </div>
-                                    </button>
-                                ) : (
-                                    <span className="font-medium shrink-0" style={{ color: "#8FA6FF", minWidth: 68 }}>
-                    {formatEventTime(item)}
-                  </span>
-                                )}
-                                <span
-                                    style={{
-                                        color: item.completed ? "var(--text-muted)" : "var(--text)",
-                                        textDecoration: item.completed ? "line-through" : "none",
-                                    }}
-                                >
-                  {item.title}
-                </span>
-                                {item.source === "TASK" && item.priority && (
-                                    <span className="text-[10px] px-1.5 py-0.5 rounded-md shrink-0" style={{ color: "var(--text-muted)", background: "var(--surface)" }}>
-                    {item.priority}
-                  </span>
-                                )}
-                                {item.notes && (
-                                    <span className="text-xs ml-auto truncate" style={{ color: "var(--text-muted)" }}>{item.notes}</span>
-                                )}
-                            </div>
-                        ))}
-                    </div>
-                )}
             </div>
+        </section>
 
-            <div className="rounded-3xl p-5" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
-                <div className="flex items-center justify-between mb-4">
-                    <h2 className="font-display text-sm" style={{ color: "var(--text-muted)" }}>Today's Habits</h2>
-                    <Link to="/habits" className="text-xs flex items-center gap-1 font-medium" style={{ color: "#FF8B6B" }}>
-                        <Plus size={14} /> Manage habits
-                    </Link>
-                </div>
+      <section className="grid gap-3 md:grid-cols-3 max-w-[1100px] mx-auto w-full">
+        <StatCard icon={TrendingUp} value={`${streak}d`} label="STREAK" />
+        <StatCard icon={Target} value={`${dayNumber}/${totalDays}`} label="DAY" />
+        <StatCard icon={Clock3} value={`${completedCount}/${totalCount}`} label="HABITS" />
+      </section>
 
-                {today.habits.length === 0 ? (
-                    <div className="text-center py-10">
-                        <p style={{ color: "var(--text-muted)" }}>No habits yet — add your first one to start tracking.</p>
-                        <Link
-                            to="/habits"
-                            className="inline-block mt-3 font-display font-bold text-sm px-4 py-2 rounded-full"
-                            style={{ background: "#FF8B6B", color: "#3A1F16" }}
-                        >
-                            Add a habit
-                        </Link>
-                    </div>
-                ) : (
-                    <div className="grid gap-2">
-                        {today.habits.map((h) => {
-                            const Icon = getHabitIcon(h.icon);
-                            const isExpanded = expandedId === h.habitId;
-                            const canAddEvidence = h.status !== "PENDING";
-                            const form = statForm(h.habitId);
-                            return (
-                                <div
-                                    key={h.habitId}
-                                    className="rounded-2xl p-3"
-                                    style={{ background: "var(--surface-2)", border: "1px solid var(--border)" }}
-                                >
-                                    <div className="flex items-center gap-3">
-                                        <button onClick={() => cycle(h)} disabled={savingId === h.habitId} className="shrink-0" aria-label="Cycle status">
-                                            <StatusIcon status={h.status} />
-                                        </button>
-                                        <div className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0" style={{ background: h.color + "22" }}>
-                                            <Icon size={17} color={h.color} />
-                                        </div>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-medium" style={{ color: "var(--text)" }}>{h.title}</p>
-                                            {h.reminderTime && (
-                                                <p className="text-xs" style={{ color: "var(--text-muted)" }}>Reminder {h.reminderTime.slice(0, 5)}</p>
-                                            )}
-                                        </div>
-                                        <span
-                                            className="text-[11px] px-2 py-1 rounded-md capitalize shrink-0"
-                                            style={{ color: h.color, background: h.color + "1a" }}
-                                        >
-                      {h.status.toLowerCase()}
-                    </span>
-                                        {canAddEvidence && (
-                                            <button
-                                                onClick={() => setExpandedId(isExpanded ? null : h.habitId)}
-                                                className="shrink-0 p-1"
-                                                aria-label="Toggle evidence"
-                                            >
-                                                <ChevronDown
-                                                    size={16}
-                                                    style={{ color: "var(--text-muted)", transform: isExpanded ? "rotate(180deg)" : "none", transition: "transform .15s" }}
-                                                />
-                                            </button>
-                                        )}
-                                    </div>
-
-                                    <input
-                                        value={noteDrafts[h.habitId] ?? ""}
-                                        onChange={(e) => setNoteDrafts((prev) => ({ ...prev, [h.habitId]: e.target.value }))}
-                                        onBlur={() => saveNote(h)}
-                                        placeholder={h.status === "PENDING" ? "Mark it first, then add a note…" : "Add a note…"}
-                                        disabled={h.status === "PENDING"}
-                                        className="w-full mt-2 text-sm px-3 py-1.5 rounded-lg outline-none disabled:opacity-60"
-                                        style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text)" }}
-                                    />
-
-                                    {isExpanded && canAddEvidence && (
-                                        <div className="mt-3 pt-3 grid gap-3" style={{ borderTop: "1px dashed var(--border)" }}>
-                                            <div>
-                                                <p className="text-xs font-medium mb-1.5" style={{ color: "var(--text-muted)" }}>Stats</p>
-                                                {h.stats.length > 0 && (
-                                                    <div className="grid gap-1 mb-2">
-                                                        {h.stats.map((s) => (
-                                                            <div
-                                                                key={s.id}
-                                                                className="flex items-center justify-between text-sm px-2.5 py-1.5 rounded-lg"
-                                                                style={{ background: "var(--surface)" }}
-                                                            >
-                                <span style={{ color: "var(--text)" }}>
-                                  {s.label}: <strong>{s.value}{s.unit ? ` ${s.unit}` : ""}</strong>
-                                </span>
-                                                                <button onClick={() => handleDeleteStat(h.habitId, s.id)} aria-label="Remove stat">
-                                                                    <X size={13} style={{ color: "var(--text-muted)" }} />
-                                                                </button>
-                                                            </div>
-                                                        ))}
-                                                    </div>
-                                                )}
-                                                <div className="flex gap-1.5">
-                                                    <input
-                                                        placeholder="Label"
-                                                        value={form.label}
-                                                        onChange={(e) => updateStatForm(h.habitId, { label: e.target.value })}
-                                                        className="flex-1 min-w-0 text-xs px-2 py-1.5 rounded-lg outline-none"
-                                                        style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text)" }}
-                                                    />
-                                                    <input
-                                                        type="number"
-                                                        placeholder="Value"
-                                                        value={form.value}
-                                                        onChange={(e) => updateStatForm(h.habitId, { value: e.target.value })}
-                                                        className="w-20 text-xs px-2 py-1.5 rounded-lg outline-none"
-                                                        style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text)" }}
-                                                    />
-                                                    <input
-                                                        placeholder="Unit"
-                                                        value={form.unit}
-                                                        onChange={(e) => updateStatForm(h.habitId, { unit: e.target.value })}
-                                                        className="w-16 text-xs px-2 py-1.5 rounded-lg outline-none"
-                                                        style={{ background: "var(--surface)", border: "1px solid var(--border)", color: "var(--text)" }}
-                                                    />
-                                                    <button
-                                                        onClick={() => handleAddStat(h.habitId)}
-                                                        className="px-2.5 rounded-lg shrink-0"
-                                                        style={{ background: "#FF8B6B", color: "#3A1F16" }}
-                                                        aria-label="Add stat"
-                                                    >
-                                                        <Plus size={13} />
-                                                    </button>
-                                                </div>
-                                            </div>
-
-                                            <div>
-                                                <div className="flex items-center justify-between mb-1.5">
-                                                    <p className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>Photos</p>
-                                                    <label
-                                                        className="text-xs flex items-center gap-1 px-2 py-1 rounded-md cursor-pointer"
-                                                        style={{ border: "1px solid var(--border)", color: "var(--text-muted)" }}
-                                                    >
-                                                        <ImageIcon size={12} /> {uploadingPhotoId === h.habitId ? "Uploading…" : "Add"}
-                                                        <input
-                                                            type="file"
-                                                            accept="image/png,image/jpeg,image/webp,image/gif"
-                                                            className="hidden"
-                                                            disabled={uploadingPhotoId === h.habitId}
-                                                            onChange={(e) => handleAddPhoto(h.habitId, e)}
-                                                        />
-                                                    </label>
-                                                </div>
-                                                {h.photos.length > 0 ? (
-                                                    <div className="grid grid-cols-4 gap-1.5">
-                                                        {h.photos.map((p) => (
-                                                            <AuthImage
-                                                                key={p.id}
-                                                                url={p.url}
-                                                                alt={p.originalFileName}
-                                                                onDelete={() => handleDeletePhoto(h.habitId, p.id)}
-                                                            />
-                                                        ))}
-                                                    </div>
-                                                ) : (
-                                                    <p className="text-xs" style={{ color: "var(--text-muted)" }}>No photos yet.</p>
-                                                )}
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            );
-                        })}
-                    </div>
-                )}
+      <section className="rounded-[28px] p-6 md:p-8 max-w-[1100px] mx-auto w-full" style={{ background: "#fcf8f1", border: "1px solid #d8cbb9" }}>
+        <div className="grid gap-6 md:grid-cols-[230px_1fr] items-center">
+          <div className="flex justify-center">
+            <ProgressRing pct={pct} />
+          </div>
+          <div>
+            <h2 className="font-black tracking-[-0.05em]" style={{ fontSize: "clamp(1.5rem,2.5vw,2rem)" }}>
+              {completedCount} of {totalCount} done
+            </h2>
+            <p className="mt-2 text-[18px]" style={{ color: "#766d63" }}>
+              {totalCount - completedCount} habits left today.
+            </p>
+            <div className="mt-5 h-2 rounded-full overflow-hidden" style={{ background: "#e7dfd2" }}>
+              <div className="h-full rounded-full" style={{ width: `${pct}%`, background: "#C85C22" }} />
             </div>
+            <blockquote className="mt-6 pl-4 border-l-2 italic text-[17px]" style={{ borderColor: "#C85C22", color: "#8a8073" }}>
+              “Every day is a chance to outperform yesterday.”
+            </blockquote>
+          </div>
         </div>
-    );
+      </section>
+
+      <section className="max-w-[1100px] mx-auto w-full grid gap-4">
+        <div className="flex items-center justify-between">
+          <h2 className="font-black tracking-[-0.05em]" style={{ fontSize: "clamp(1.5rem,2.5vw,2rem)" }}>
+            TODAY'S HABITS
+          </h2>
+            <Link
+                to="/habits"
+                className="px-4 py-2 rounded-full text-[14px] font-semibold"
+                style={{ border: "1px solid #dbcfbf", color: "#C85C22", background: "#fcf8f1" }}
+            >
+                + Manage
+            </Link>
+        </div>
+
+        <div className="grid gap-3">
+          {habits.map((habit) => {
+            const Icon = getHabitIcon(habit.icon);
+            const done = habit.status === "COMPLETED";
+            return (
+              <div key={habit.habitId} className="rounded-[20px] px-4 py-3 flex items-center gap-4" style={{ background: "#fcf8f1", border: "1px solid #d8cbb9" }}>
+                <button onClick={() => handleHabitClick(habit)} className="shrink-0" aria-label="Toggle habit">
+                  <HabitStatusIcon status={habit.status} />
+                </button>
+                <span className="w-3 h-3 rounded-full shrink-0" style={{ background: habit.color }} />
+                <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: "#fff8ef" }}>
+                  <Icon size={16} color={habit.color} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className={`text-[17px] ${done ? "line-through" : ""}`} style={{ color: done ? "#8f8577" : "#1a1714" }}>{habit.title}</p>
+                </div>
+                <StatusPill status={habit.status} />
+                <div className="flex items-center gap-1 text-[14px]" style={{ color: "#c85c22" }}>
+                  <span>🔥</span>
+                  <span className="font-semibold">{habit.streak ?? 0}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="max-w-[1100px] mx-auto w-full grid gap-4 md:grid-cols-2">
+        <Link to="/journal" className="rounded-[20px] px-5 py-4 flex items-center justify-between" style={{ background: "#fcf8f1", border: "1px solid #d8cbb9" }}>
+          <div className="flex items-center gap-3">
+            <BookOpen size={18} color="#C85C22" />
+            <div>
+              <p className="font-bold" style={{ color: "#1a1714" }}>Journal</p>
+              <p className="text-[14px]" style={{ color: "#766d63" }}>Write today&apos;s entry</p>
+            </div>
+          </div>
+          <ChevronRight size={18} color="#8f8577" />
+        </Link>
+        <Link to="/analytics" className="rounded-[20px] px-5 py-4 flex items-center justify-between" style={{ background: "#fcf8f1", border: "1px solid #d8cbb9" }}>
+          <div className="flex items-center gap-3">
+            <TrendingUp size={18} color="#C85C22" />
+            <div>
+              <p className="font-bold" style={{ color: "#1a1714" }}>Analytics</p>
+              <p className="text-[14px]" style={{ color: "#766d63" }}>See your progress</p>
+            </div>
+          </div>
+          <ChevronRight size={18} color="#8f8577" />
+        </Link>
+      </section>
+
+      <section className="max-w-[1100px] mx-auto w-full grid gap-4">
+        <div className="flex items-center justify-between">
+          <h2 className="font-black tracking-[-0.05em]" style={{ fontSize: "clamp(1.5rem,2.5vw,2rem)" }}>
+            TODAY'S TASKS
+          </h2>
+            <Link
+                to="/todos"
+                className="px-4 py-2 rounded-full text-[14px] font-semibold"
+                style={{ border: "1px solid #dbcfbf", color: "#C85C22", background: "#fcf8f1" }}
+            >
+                + Manage
+            </Link>
+        </div>
+
+        <div className="grid gap-3">
+          {visibleTodos.map((item) => (
+            <div key={item.taskId ?? item.eventId ?? item.id} className="rounded-[18px] px-4 py-3 flex items-center gap-4" style={{ background: "#fcf8f1", border: "1px solid #d8cbb9" }}>
+              <button onClick={() => handleTaskClick(item)} className="shrink-0" aria-label="Toggle task" disabled={!item.taskId}>
+                <div className="w-[22px] h-[22px] rounded-md flex items-center justify-center" style={{ border: `1.8px solid ${item.completed ? "#4b7a36" : "#d0c6b7"}`, background: item.completed ? "#4b7a36" : "transparent" }}>
+                  {item.completed && <Check size={12} color="#fff" />}
+                </div>
+              </button>
+              <span className={`flex-1 text-[17px] ${item.completed ? "line-through" : ""}`} style={{ color: item.completed ? "#8f8577" : "#1a1714" }}>
+                {item.title}
+              </span>
+              <TaskPriority priority={item.priority} />
+              <ArrowRight size={16} color="#8f8577" />
+            </div>
+          ))}
+        </div>
+      </section>
+    </div>
+  );
 }

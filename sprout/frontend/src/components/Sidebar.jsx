@@ -1,61 +1,61 @@
 import { NavLink } from "react-router-dom";
-import { Home, ListChecks, BookOpen, ListTodo, FolderKanban, BarChart3, User, LogOut, Sprout as SproutIcon } from "lucide-react";
+import { Home, ListChecks, ListTodo, FolderKanban, BookOpen, BarChart3, User, LogOut, ArrowUpRight } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 const LINKS = [
-  { to: "/",          label: "Dashboard", Icon: Home,          end: true  },
-  { to: "/habits",    label: "Habits",    Icon: ListChecks,    end: false },
-  { to: "/todos",     label: "To-Do",     Icon: ListTodo,      end: false },
-  { to: "/projects",  label: "Projects",  Icon: FolderKanban,  end: false },
-  { to: "/journal",   label: "Journal",   Icon: BookOpen,      end: false },
-  { to: "/analytics", label: "Analytics", Icon: BarChart3,     end: false },
-  { to: "/profile",   label: "Profile",   Icon: User,          end: false },
+  { to: "/", label: "Dashboard", Icon: Home, end: true },
+  { to: "/habits", label: "Habits", Icon: ListChecks },
+  { to: "/todos", label: "Tasks", Icon: ListTodo },
+  { to: "/projects", label: "Projects", Icon: FolderKanban },
+  { to: "/journal", label: "Journal", Icon: BookOpen },
+  { to: "/analytics", label: "Analytics", Icon: BarChart3 },
+  { to: "/profile", label: "Profile", Icon: User },
 ];
 
 export default function Sidebar() {
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
 
   return (
-      <aside
-          className="w-60 shrink-0 h-screen sticky top-0 flex flex-col p-4"
-          style={{ borderRight: "1px solid var(--border)" }}
-      >
-        <div className="flex items-center gap-2 px-2 py-3">
-          <SproutIcon size={20} style={{ color: "#8FBE7A" }} />
-          <span className="font-display text-lg font-bold" style={{ color: "var(--text)" }}>
-          Sprout
+    <aside
+      className="w-[175px] shrink-0 h-screen sticky top-0 flex flex-col"
+      style={{ background: "#F5F0EB", borderRight: "1px solid #dcd3c7" }}
+    >
+      <div className="h-[78px] px-5 flex items-center border-b" style={{ borderColor: "#ddd4c8" }}>
+        <div className="w-8 h-8 rounded-md flex items-center justify-center" style={{ background: "#C85C22" }}>
+          <ArrowUpRight size={18} color="#fff" strokeWidth={2.8} />
+        </div>
+        <span className="ml-3 font-black text-[20px] tracking-[-0.02em]" style={{ color: "#1a1714" }}>
+          ASCEND
         </span>
-        </div>
+      </div>
 
-        <nav className="flex-1 mt-4 grid gap-1">
-          {LINKS.map(({ to, label, Icon, end }) => (
-              <NavLink
-                  key={to}
-                  to={to}
-                  end={end}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors"
-                  style={({ isActive }) => ({
-                    background: isActive ? "var(--surface-2)" : "transparent",
-                    color: isActive ? "#FF8B6B" : "var(--text-muted)",
-                  })}
-              >
-                <Icon size={17} />
-                {label}
-              </NavLink>
-          ))}
-        </nav>
-
-        <div className="border-t pt-3 mt-3" style={{ borderColor: "var(--border)" }}>
-          <p className="text-sm font-medium px-3" style={{ color: "var(--text)" }}>{user?.name}</p>
-          <p className="text-xs px-3 mb-2" style={{ color: "var(--text-muted)" }}>@{user?.username}</p>
-          <button
-              onClick={logout}
-              className="flex items-center gap-2 px-3 py-2 rounded-xl text-sm w-full"
-              style={{ color: "var(--text-muted)" }}
+      <nav className="flex-1 px-4 py-6 grid gap-3 content-start">
+        {LINKS.map(({ to, label, Icon, end }) => (
+          <NavLink
+            key={to}
+            to={to}
+            end={end}
+            className="flex items-center gap-3 px-2 py-2 rounded-xl text-[14px] font-medium"
+            style={({ isActive }) => ({
+              color: isActive ? "#C4521A" : "#766d63",
+            })}
           >
-            <LogOut size={16} /> Log out
-          </button>
-        </div>
-      </aside>
+            <Icon size={16} strokeWidth={2.1} />
+            <span>{label}</span>
+          </NavLink>
+        ))}
+      </nav>
+
+      <div className="px-4 pb-5 pt-4 border-t grid gap-2" style={{ borderColor: "#ddd4c8" }}>
+        <button
+          onClick={logout}
+          className="flex items-center gap-3 px-2 py-2 rounded-xl text-[14px] font-medium text-left"
+          style={{ color: "#766d63" }}
+        >
+          <LogOut size={16} strokeWidth={2.1} />
+          <span>Sign out</span>
+        </button>
+      </div>
+    </aside>
   );
 }
