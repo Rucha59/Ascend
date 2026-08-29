@@ -13,3 +13,8 @@ export const deleteMilestone = (projectId, milestoneId) => api.delete(`/projects
 export const addChecklistItem    = (projectId, milestoneId, payload) => api.post(`/projects/${projectId}/milestones/${milestoneId}/items`, payload).then(r => r.data);
 export const toggleChecklistItem = (projectId, milestoneId, itemId)  => api.patch(`/projects/${projectId}/milestones/${milestoneId}/items/${itemId}/toggle`).then(r => r.data);
 export const deleteChecklistItem = (projectId, milestoneId, itemId)  => api.delete(`/projects/${projectId}/milestones/${milestoneId}/items/${itemId}`).then(r => r.data);
+export const updateChecklistItem = (projectId, milestoneId, itemId, payload) =>
+    api.patch(
+        `/projects/${projectId}/milestones/${milestoneId}/items/${itemId}`,
+        payload
+    ).then(r => r.data);

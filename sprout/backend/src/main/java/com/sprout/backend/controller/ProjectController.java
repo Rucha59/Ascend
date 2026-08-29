@@ -113,4 +113,22 @@ public class ProjectController {
             @PathVariable Long itemId) {
         return ResponseEntity.ok(projectService.deleteChecklistItem(principal, projectId, milestoneId, itemId));
     }
+    @PatchMapping("/{projectId}/milestones/{milestoneId}/items/{itemId}")
+    public ResponseEntity<ProjectResponse> updateChecklistItem(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable Long projectId,
+            @PathVariable Long milestoneId,
+            @PathVariable Long itemId,
+            @Valid @RequestBody UpdateChecklistItemRequest request) {
+
+        return ResponseEntity.ok(
+                projectService.updateChecklistItem(
+                        principal,
+                        projectId,
+                        milestoneId,
+                        itemId,
+                        request
+                )
+        );
+    }
 }

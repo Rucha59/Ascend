@@ -12,7 +12,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -22,6 +23,9 @@ public class ProjectService {
     private final MilestoneRepository milestoneRepository;
     private final ChecklistItemRepository checklistItemRepository;
 
+
+    @PersistenceContext
+    private EntityManager entityManager;
     // ───────────────────────────── Projects ─────────────────────────────
 
     public ProjectResponse createProject(UserPrincipal principal, CreateProjectRequest req) {
@@ -103,7 +107,7 @@ public class ProjectService {
                 .title(req.title().trim())
                 .position(nextPos)
                 .build();
-        checklistItemRepository.save(item);
+        checklistItemRepository.saveAndFlush(item);
         return toResponse(getOwnedProject(principal.getId(), projectId));
     }
 
@@ -122,7 +126,39 @@ public class ProjectService {
         getOwnedMilestone(projectId, milestoneId);
         ChecklistItem item = checklistItemRepository.findByIdAndMilestoneId(itemId, milestoneId)
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Checklist item not found"));
+        System.out.println("Deleting item " + item.getId());
         checklistItemRepository.delete(item);
+        System.out.println(
+                checklistItemRepository.findById(item.getId()).isPresent()
+        );
+        entityManager.flush();
+        entityManager.clear();
+
+        Project project = getOwnedProject(principal.getId(), projectId);
+        return toResponse(project);    }
+
+    public ProjectResponse updateChecklistItem(
+            UserPrincipal principal,
+            Long projectId,
+            Long milestoneId,
+            Long itemId,
+            UpdateChecklistItemRequest request) {
+
+        getOwnedProject(principal.getId(), projectId);
+        getOwnedMilestone(projectId, milestoneId);
+
+        ChecklistItem item = checklistItemRepository
+                .findByIdAndMilestoneId(itemId, milestoneId)
+                .orElseThrow(() ->
+                        new ApiException(HttpStatus.NOT_FOUND, "Checklist item not found"));
+
+        item.setTitle(request.title().trim());
+
+        checklistItemRepository.save(item);
+
+        entityManager.flush();
+        entityManager.clear();
+
         return toResponse(getOwnedProject(principal.getId(), projectId));
     }
 

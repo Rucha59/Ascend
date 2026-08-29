@@ -6,22 +6,22 @@
 
 /* ── Default / Blush (light pink-purple) ──────────────────── */
 :root {
-  --bg:         #fbf4f8;
-  --surface:    #ffffff;
-  --surface-2:  #fdeff6;
-  --surface-3:  #f7e4f1;
-  --border:     #f3dcea;
-  --text:       #4a3b4d;
-  --text-muted: #9b87a0;
-  --accent:     #c45e9e;
-  --accent-fg:  #ffffff;
-  --green:      #4f9e6f;
-  --red:        #c24a6a;
-  --blue:       #4a72c4;
-  --ring:       rgba(196,94,158,.3);
-  /* aliases so components using either name work */
+  --bg:         #f5f0e8;
+  --surface:    #fffdf7;
+  --surface-2:  #edeae0;
+  --surface-3:  #e4dfd4;
+  --border:     #d8d0c0;
+  --text:       #2a2218;
+  --text-muted: #9a9080;
+  --accent:     #c05a20;
+  --accent-fg:  #fff8ef;
+  --green:      #437830;
+  --red:        #b03050;
+  --blue:       #2848a8;
+  --ring:       rgba(192,90,32,.3);
   --background: var(--bg);
 }
+
 
 /* ── Dark ─────────────────────────────────────────────────── */
 .dark {
@@ -97,19 +97,21 @@
 
 /* ── Paper (warm sepia) ───────────────────────────────────── */
 .paper {
-  --bg:         #f5f0e8;
-  --surface:    #fffdf7;
-  --surface-2:  #edeae0;
-  --surface-3:  #e4dfd4;
-  --border:     #d8d0c0;
-  --text:       #2a2218;
-  --text-muted: #9a9080;
-  --accent:     #c05a20;
-  --accent-fg:  #fff8ef;
-  --green:      #437830;
-  --red:        #b03050;
-  --blue:       #2848a8;
-  --ring:       rgba(192,90,32,.3);
+
+  --bg:         #fbf4f8;
+  --surface:    #ffffff;
+  --surface-2:  #fdeff6;
+  --surface-3:  #f7e4f1;
+  --border:     #f3dcea;
+  --text:       #4a3b4d;
+  --text-muted: #9b87a0;
+  --accent:     #c45e9e;
+  --accent-fg:  #ffffff;
+  --green:      #4f9e6f;
+  --red:        #c24a6a;
+  --blue:       #4a72c4;
+  --ring:       rgba(196,94,158,.3);
+  /* aliases so components using either name work */
   --background: var(--bg);
 }
 

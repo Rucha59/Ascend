@@ -1,23 +1,23 @@
-import { useEffect, useMemo, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import {useEffect, useMemo, useState} from "react";
+import {Link, useSearchParams} from "react-router-dom";
 import {
-  ArrowRight,
-  BookOpen,
-  Check,
-  CheckCircle2,
-  Circle,
-  Clock3,
-  MinusCircle,
-  ChevronRight,
-  Target,
-  TrendingUp,
+    ArrowRight,
+    BookOpen,
+    Check,
+    CheckCircle2,
+    ChevronRight,
+    Circle,
+    Clock3,
+    MinusCircle,
+    Target,
+    TrendingUp,
 } from "lucide-react";
-import { useAuth } from "../context/AuthContext";
-import { getToday } from "../api/days";
-import { getAnalytics } from "../api/analytics";
-import { getTodayTodos, toggleTodo } from "../api/todos";
-import { markHabitLog } from "../api/habits";
-import { getHabitIcon } from "../lib/habitIcons";
+import {useAuth} from "../context/AuthContext";
+import {getToday} from "../api/days";
+import {getAnalytics} from "../api/analytics";
+import {getTodayTodos, toggleTodo} from "../api/todos";
+import {markHabitLog} from "../api/habits";
+import {getHabitIcon} from "../lib/habitIcons";
 
 const CYCLE = ["COMPLETED", "MISSED", "SKIPPED"];
 
@@ -184,29 +184,24 @@ export default function Dashboard() {
 
     const handleTaskClick = async (task) => {
         if (!task.taskId) return;
-        setTodoItems((prev) =>
-            prev.map((t) =>
-                t.taskId === task.taskId ? { ...t, completed: !t.completed } : t
-            )
-        );
+
         try {
             await toggleTodo(task.taskId);
+
+            const todos = await getTodayTodos();
+            setTodoItems(todos);
         } catch {
             setError("Couldn't update that task.");
-            await reload(true);
         }
     };
-
+    const loadTodayTodos = () => {
+        getTodayTodos()
+            .then(setTodoItems)
+            .catch(() => setError("Couldn't load today's to-do list."));
+    };
   if (loading || !today) {
     return <div className="pt-6" style={{ color: "#8f8577" }}>Loading dashboard…</div>;
   }
-
-  const visibleTodos = todoItems.length > 0 ? todoItems : [
-    { taskId: 1, title: "Review Q3 goals", completed: true, priority: "HIGH" },
-    { taskId: 2, title: "Deep work block - 2h", completed: false, priority: "HIGH" },
-    { taskId: 3, title: "Send project update", completed: false, priority: "MED" },
-    { taskId: 4, title: "1-mile run at 7pm", completed: false, priority: "LOW" },
-  ];
 
   return (
     <div className="pt-8 pb-12 px-8 grid gap-8" style={{ color: "#1a1714" }}>
@@ -392,7 +387,7 @@ export default function Dashboard() {
         </div>
 
         <div className="grid gap-3">
-          {visibleTodos.map((item) => (
+          {todoItems.map((item) => (
             <div key={item.taskId ?? item.eventId ?? item.id} className="rounded-[18px] px-4 py-3 flex items-center gap-4" style={{ background: "#fcf8f1", border: "1px solid #d8cbb9" }}>
               <button onClick={() => handleTaskClick(item)} className="shrink-0" aria-label="Toggle task" disabled={!item.taskId}>
                 <div className="w-[22px] h-[22px] rounded-md flex items-center justify-center" style={{ border: `1.8px solid ${item.completed ? "#4b7a36" : "#d0c6b7"}`, background: item.completed ? "#4b7a36" : "transparent" }}>
@@ -403,7 +398,7 @@ export default function Dashboard() {
                 {item.title}
               </span>
               <TaskPriority priority={item.priority} />
-              <ArrowRight size={16} color="#8f8577" />
+
             </div>
           ))}
         </div>

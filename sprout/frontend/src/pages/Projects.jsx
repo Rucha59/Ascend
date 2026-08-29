@@ -6,7 +6,7 @@ import {
   listProjects, createProject, updateProject, deleteProject,
   getProject,
   addMilestone, updateMilestone, deleteMilestone,
-  addChecklistItem, toggleChecklistItem, deleteChecklistItem,
+  addChecklistItem, toggleChecklistItem, deleteChecklistItem,updateChecklistItem,
 } from "../api/projects";
 
 const PRIORITY_COLORS = { LOW: "#8FBE7A", MEDIUM: "#8FA6FF", HIGH: "#FF88AA" };
@@ -31,16 +31,42 @@ function ProgressLabel({ pct, completedItems, totalItems }) {
 }
 
 function ChecklistRow({ projectId, milestoneId, item, onUpdated, onError }) {
+  const [editing, setEditing] = useState(false);
+  const [title, setTitle] = useState(item.title);
   const toggle = async () => {
     try { onUpdated(await toggleChecklistItem(projectId, milestoneId, item.id)); }
     catch { onError("Couldn't toggle that item."); }
   };
   const remove = async () => {
-    try { onUpdated(await deleteChecklistItem(projectId, milestoneId, item.id)); }
-    catch { onError("Couldn't remove that item."); }
+    console.log("Deleting", item.id);
+
+    try {
+      const updated = await deleteChecklistItem(projectId, milestoneId, item.id);
+      console.log(updated);
+      onUpdated(updated);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+  const save = async () => {
+    if (!title.trim()) return;
+
+    try {
+      const updated = await updateChecklistItem(
+          projectId,
+          milestoneId,
+          item.id,
+          { title }
+      );
+
+      onUpdated(updated);
+      setEditing(false);
+    } catch {
+      onError("Couldn't update checklist item.");
+    }
   };
   return (
-    <div className="flex items-center gap-2 group">
+      <div className="flex items-center gap-2 group rounded-lg px-2 py-1 transition-all duration-200 hover:bg-[var(--surface-2)] hover:shadow-sm">
       <button onClick={toggle} className="shrink-0" aria-label="Toggle">
         <div
           className="w-4 h-4 rounded flex items-center justify-center"
@@ -49,15 +75,76 @@ function ChecklistRow({ projectId, milestoneId, item, onUpdated, onError }) {
           {item.completed && <Check size={11} color="#fff" />}
         </div>
       </button>
-      <span
-        className="flex-1 text-sm"
-        style={{ color: item.completed ? "var(--text-muted)" : "var(--text)", textDecoration: item.completed ? "line-through" : "none" }}
-      >
+        {editing ? (
+            <input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") save();
+                }}
+                autoFocus
+                className="flex-1 text-sm px-2 py-1 rounded-lg outline-none"
+                style={{
+                  background: "var(--bg)",
+                  border: "1px solid var(--border)",
+                  color: "var(--text)"
+                }}
+            />
+        ) : (
+            <span
+                className="flex-1 text-sm"
+                style={{
+                  color: item.completed ? "var(--text-muted)" : "var(--text)",
+                  textDecoration: item.completed ? "line-through" : "none"
+                }}
+            >
         {item.title}
-      </span>
-      <button onClick={remove} className="opacity-0 group-hover:opacity-100 shrink-0" aria-label="Delete">
-        <X size={13} style={{ color: "var(--text-muted)" }} />
-      </button>
+    </span>
+        )}
+        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+
+          {editing ? (
+              <>
+                <button
+                    type="button"
+                    onClick={save}
+                    className="p-1 rounded"
+                >
+                  <Check size={13} color="#8FBE7A" />
+                </button>
+
+                <button
+                    type="button"
+                    onClick={() => {
+                      setTitle(item.title);
+                      setEditing(false);
+                    }}
+                    className="p-1 rounded"
+                >
+                  <X size={13} color="#FF88AA" />
+                </button>
+              </>
+          ) : (
+              <>
+                <button
+                    type="button"
+                    onClick={() => setEditing(true)}
+                    className="p-1 rounded"
+                >
+                  <Pencil size={13} style={{ color: "var(--text-muted)" }} />
+                </button>
+
+                <button
+                    type="button"
+                    onClick={remove}
+                    className="p-1 rounded hover:bg-red-50"
+                >
+                  <X size={13} color="#FF88AA" />
+                </button>
+              </>
+          )}
+
+        </div>
     </div>
   );
 }
@@ -68,10 +155,22 @@ function AddChecklistItemForm({ projectId, milestoneId, onAdded, onError }) {
   const submit = async (e) => {
     e.preventDefault();
     if (!title.trim()) return;
+
     setSaving(true);
-    try { onAdded(await addChecklistItem(projectId, milestoneId, { title })); setTitle(""); }
-    catch { onError("Couldn't add that item."); }
-    finally { setSaving(false); }
+
+    try {
+      await addChecklistItem(projectId, milestoneId, { title });
+
+      const refreshed = await getProject(projectId);
+
+      onAdded(refreshed);
+
+      setTitle("");
+    } catch {
+      onError("Couldn't add that item.");
+    } finally {
+      setSaving(false);
+    }
   };
   return (
     <form onSubmit={submit} className="flex gap-1.5 mt-1">
@@ -299,6 +398,7 @@ function ProjectCard({ project: initial, onError, onDeleted }) {
   };
 
   const handleAddMilestone = async (e) => {
+    console.log("Submitting milestone");
     e.preventDefault();
     if (!milestoneForm.name.trim()) return;
     try {

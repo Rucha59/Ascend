@@ -18,15 +18,32 @@ export default function Sidebar() {
   return (
     <aside
       className="w-[175px] shrink-0 h-screen sticky top-0 flex flex-col"
-      style={{ background: "#F5F0EB", borderRight: "1px solid #dcd3c7" }}
-    >
+      style={{
+        background: "var(--surface)",
+        borderRight: "1px solid var(--border)"
+      }}    >
       <div className="h-[78px] px-5 flex items-center border-b" style={{ borderColor: "#ddd4c8" }}>
-        <div className="w-8 h-8 rounded-md flex items-center justify-center" style={{ background: "#C85C22" }}>
-          <ArrowUpRight size={18} color="#fff" strokeWidth={2.8} />
+        <div
+            className="w-9 h-9 rounded-lg flex items-center justify-center"
+            style={{
+              background: "var(--surface-2)",
+              border: "2px solid var(--accent)",
+              boxShadow: "0 4px 12px rgba(192,90,32,0.12)"
+            }}
+        >
+          <ArrowUpRight
+              size={19}
+              color="var(--accent)"
+              strokeWidth={2.8}
+          />
         </div>
-        <span className="ml-3 font-black text-[20px] tracking-[-0.02em]" style={{ color: "#1a1714" }}>
-          ASCEND
-        </span>
+
+        <span
+            className="ml-3 font-black text-[20px] tracking-[-0.02em]"
+            style={{ color: "var(--text)" }}
+        >
+  ASCEND
+</span>
       </div>
 
       <nav className="flex-1 px-4 py-6 grid gap-3 content-start">
@@ -37,7 +54,7 @@ export default function Sidebar() {
             end={end}
             className="flex items-center gap-3 px-2 py-2 rounded-xl text-[14px] font-medium"
             style={({ isActive }) => ({
-              color: isActive ? "#C4521A" : "#766d63",
+              color: isActive ? "var(--accent)" : "var(--text-muted)",
             })}
           >
             <Icon size={16} strokeWidth={2.1} />
@@ -46,11 +63,11 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      <div className="px-4 pb-5 pt-4 border-t grid gap-2" style={{ borderColor: "#ddd4c8" }}>
+      <div className="px-4 pb-5 pt-4 border-t grid gap-2" style={{ borderColor: "var(--border)" }}>
         <button
           onClick={logout}
           className="flex items-center gap-3 px-2 py-2 rounded-xl text-[14px] font-medium text-left"
-          style={{ color: "#766d63" }}
+          style={{ color: "var(--text-muted)" }}
         >
           <LogOut size={16} strokeWidth={2.1} />
           <span>Sign out</span>
