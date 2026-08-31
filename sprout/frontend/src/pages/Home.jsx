@@ -630,6 +630,13 @@ export default function Home() {
                             <a key={l} href="#" className="text-xs text-[#8a7d72] hover:text-[#d95a2b] transition-colors">{l}</a>
                         ))}
                     </div>
+                    <Link
+                        to="/privacy"
+                        className="text-sm hover:underline"
+                        style={{ color: "#8a7d72" }}
+                    >
+                        Privacy Policy
+                    </Link>
                 </div>
             </footer>
 

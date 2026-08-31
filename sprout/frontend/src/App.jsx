@@ -46,7 +46,7 @@ import { ThemeProvider } from "./context/ThemeContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import HomeRoute from "./components/HomeRoute";
 import Layout from "./components/Layout";
-
+import Privacy from "./pages/Privacy";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
@@ -72,7 +72,7 @@ export default function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/oauth2/callback" element={<OAuth2Callback />} />
-
+              <Route path="/privacy" element={<Privacy />} />
               {/* Protected application */}
               <Route element={<ProtectedRoute />}>
                 <Route element={<Layout />}>
