@@ -3,9 +3,9 @@ import { createContext, useContext, useEffect, useState } from "react";
 const ThemeContext = createContext(null);
 const THEME_STORAGE_KEY = "sprout_theme";
 const AVAILABLE_THEMES = [
-  { value: "paper", label: "Light" },
+  { value: "paper", label: "Pink" },
   { value: "dark", label: "Dark" },
-  { value: "system", label: "System" },
+  { value: "default", label: "Light" },
 ];
 
 function getSystemTheme() {

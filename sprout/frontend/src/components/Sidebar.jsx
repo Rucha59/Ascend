@@ -1,9 +1,9 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { Home, ListChecks, ListTodo, FolderKanban, BookOpen, BarChart3, User, LogOut, ArrowUpRight } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 const LINKS = [
-  { to: "/", label: "Dashboard", Icon: Home, end: true },
+  { to: "/dashboard", label: "Dashboard", Icon: Home, end: true },
   { to: "/habits", label: "Habits", Icon: ListChecks },
   { to: "/todos", label: "Tasks", Icon: ListTodo },
   { to: "/projects", label: "Projects", Icon: FolderKanban },
@@ -14,7 +14,11 @@ const LINKS = [
 
 export default function Sidebar() {
   const { logout } = useAuth();
-
+  const navigate = useNavigate();
+    const handleLogout = () => {
+        logout();
+        navigate("/");
+    };
   return (
     <aside
       className="w-[175px] shrink-0 h-screen sticky top-0 flex flex-col"
@@ -65,7 +69,7 @@ export default function Sidebar() {
 
       <div className="px-4 pb-5 pt-4 border-t grid gap-2" style={{ borderColor: "var(--border)" }}>
         <button
-          onClick={logout}
+          onClick={handleLogout}
           className="flex items-center gap-3 px-2 py-2 rounded-xl text-[14px] font-medium text-left"
           style={{ color: "var(--text-muted)" }}
         >
