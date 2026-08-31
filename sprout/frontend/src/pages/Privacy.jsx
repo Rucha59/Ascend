@@ -303,7 +303,7 @@ export default function Privacy() {
                             </p>
 
                             <p className="mt-3 font-semibold">
-                                YOUR_EMAIL@example.com
+                                ruchasp9@gmail.com
                             </p>
                         </section>
 
