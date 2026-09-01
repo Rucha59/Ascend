@@ -1,29 +1,32 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080/api",
+    baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080/api",
+    timeout: 30000, // 30s — covers Render free tier cold starts
 });
 
-// Attach the JWT to every request once we have one.
+// Attach JWT to every request
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("sprout_token");
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
+    const token = localStorage.getItem("sprout_token");
+    if (token) config.headers.Authorization = `Bearer ${token}`;
+    return config;
 });
 
-// A 401 means the token is missing/expired — clear it and send the user back to login.
+// 401 handler — but NEVER redirect on auth endpoints themselves,
+// otherwise a wrong password on /login causes an infinite redirect loop.
 api.interceptors.response.use(
-  (res) => res,
-  (err) => {
-    if (err.response?.status === 401) {
-      localStorage.removeItem("sprout_token");
-      localStorage.removeItem("sprout_user");
-      if (window.location.pathname !== "/login") {
-        window.location.href = "/login";
-      }
+    (res) => res,
+    (err) => {
+        const isAuthRoute = err.config?.url?.includes("/auth/");
+        if (err.response?.status === 401 && !isAuthRoute) {
+            localStorage.removeItem("sprout_token");
+            localStorage.removeItem("sprout_user");
+            if (window.location.pathname !== "/login") {
+                window.location.href = "/login";
+            }
+        }
+        return Promise.reject(err);
     }
-    return Promise.reject(err);
-  }
 );
 
 export default api;
