@@ -41,9 +41,8 @@ public class UserPrincipal implements UserDetails {
 
     @Override
     public String getUsername() {
-        return user.getEmail(); // login identifier, not the entity's display `username`
+        return user.getUsername();
     }
-
     @Override
     public boolean isAccountNonExpired() { return true; }
 

@@ -28,8 +28,9 @@ public class JwtService {
 
     public String generateToken(UserPrincipal principal) {
         Instant now = Instant.now();
+
         return Jwts.builder()
-                .subject(principal.getUsername()) // email
+                .subject(principal.getUsername())
                 .claim("uid", principal.getId())
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(now.plusMillis(expirationMs)))
@@ -37,21 +38,26 @@ public class JwtService {
                 .compact();
     }
 
-    public String extractEmail(String token) {
+    public String extractUsername(String token) {
         return parseClaims(token).getSubject();
     }
 
     public boolean isTokenValid(String token, UserDetails userDetails) {
         try {
-            String email = extractEmail(token);
-            return email.equals(userDetails.getUsername()) && !isExpired(token);
+            String username = extractUsername(token);
+
+            return username.equals(userDetails.getUsername())
+                    && !isExpired(token);
+
         } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
     }
 
     private boolean isExpired(String token) {
-        return parseClaims(token).getExpiration().before(new Date());
+        return parseClaims(token)
+                .getExpiration()
+                .before(new Date());
     }
 
     private Claims parseClaims(String token) {
