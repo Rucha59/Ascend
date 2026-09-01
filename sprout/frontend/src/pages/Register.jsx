@@ -52,9 +52,9 @@ export default function Register() {
     }
   };
 
-  const signInWithGoogle = () => {
-    window.location.href = `${getBackendOrigin()}/oauth2/authorization/google`;
-  };
+  // const signInWithGoogle = () => {
+  //   window.location.href = `${getBackendOrigin()}/oauth2/authorization/google`;
+  // };
 
   return (
       <div
@@ -141,38 +141,38 @@ export default function Register() {
                 </div>
             )}
 
-            {/* Google */}
-            <button
-                type="button"
-                onClick={signInWithGoogle}
-                className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all hover:-translate-y-0.5"
-                style={{
-                  background: "#ffffff",
-                  color: "#1c1714",
-                  border: "1px solid #ddd5c8",
-                }}
-            >
-              <svg width="18" height="18" viewBox="0 0 24 24">
-                <path
-                    fill="#4285F4"
-                    d="M21.35 12.27c0-.78-.07-1.53-.23-2.27H12v4.3h5.22a4.47 4.47 0 0 1-1.94 2.93v2.43h3.14c1.84-1.69 2.93-4.18 2.93-7.39Z"
-                />
-                <path
-                    fill="#34A853"
-                    d="M12 21.5c2.63 0 4.84-.87 6.45-2.34l-3.14-2.43c-.87.58-1.98.92-3.31.92-2.55 0-4.71-1.72-5.49-4.04H3.26v2.5A9.74 9.74 0 0 0 12 21.5Z"
-                />
-                <path
-                    fill="#FBBC05"
-                    d="M6.51 13.61a5.84 5.84 0 0 1 0-3.72V7.39H3.26a9.5 9.5 0 0 0 0 8.72l3.25-2.5Z"
-                />
-                <path
-                    fill="#EA4335"
-                    d="M12 5.85c1.43 0 2.72.49 3.74 1.45l2.8-2.8C16.83 2.96 14.62 2.5 12 2.5a9.74 9.74 0 0 0-8.74 5l3.25 2.5C7.29 7.57 9.45 5.85 12 5.85Z"
-                />
-              </svg>
+            {/*/!* Google *!/*/}
+            {/*<button*/}
+            {/*    type="button"*/}
+            {/*    onClick={signInWithGoogle}*/}
+            {/*    className="w-full flex items-center justify-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all hover:-translate-y-0.5"*/}
+            {/*    style={{*/}
+            {/*      background: "#ffffff",*/}
+            {/*      color: "#1c1714",*/}
+            {/*      border: "1px solid #ddd5c8",*/}
+            {/*    }}*/}
+            {/*>*/}
+            {/*  <svg width="18" height="18" viewBox="0 0 24 24">*/}
+            {/*    <path*/}
+            {/*        fill="#4285F4"*/}
+            {/*        d="M21.35 12.27c0-.78-.07-1.53-.23-2.27H12v4.3h5.22a4.47 4.47 0 0 1-1.94 2.93v2.43h3.14c1.84-1.69 2.93-4.18 2.93-7.39Z"*/}
+            {/*    />*/}
+            {/*    <path*/}
+            {/*        fill="#34A853"*/}
+            {/*        d="M12 21.5c2.63 0 4.84-.87 6.45-2.34l-3.14-2.43c-.87.58-1.98.92-3.31.92-2.55 0-4.71-1.72-5.49-4.04H3.26v2.5A9.74 9.74 0 0 0 12 21.5Z"*/}
+            {/*    />*/}
+            {/*    <path*/}
+            {/*        fill="#FBBC05"*/}
+            {/*        d="M6.51 13.61a5.84 5.84 0 0 1 0-3.72V7.39H3.26a9.5 9.5 0 0 0 0 8.72l3.25-2.5Z"*/}
+            {/*    />*/}
+            {/*    <path*/}
+            {/*        fill="#EA4335"*/}
+            {/*        d="M12 5.85c1.43 0 2.72.49 3.74 1.45l2.8-2.8C16.83 2.96 14.62 2.5 12 2.5a9.74 9.74 0 0 0-8.74 5l3.25 2.5C7.29 7.57 9.45 5.85 12 5.85Z"*/}
+            {/*    />*/}
+            {/*  </svg>*/}
 
-              Continue with Google
-            </button>
+            {/*  Continue with Google*/}
+            {/*</button>*/}
 
             {/* Divider */}
             <div className="flex items-center gap-3 my-6">

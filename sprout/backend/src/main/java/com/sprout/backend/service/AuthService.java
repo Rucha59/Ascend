@@ -55,14 +55,15 @@ public class AuthService {
     public AuthResponse login(LoginRequest req) {
         try {
             authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(req.email(), req.password())
+                    new UsernamePasswordAuthenticationToken(req.username(), req.password())
             );
         } catch (BadCredentialsException e) {
-            throw new ApiException(HttpStatus.UNAUTHORIZED, "Incorrect email or password");
+            throw new ApiException(HttpStatus.UNAUTHORIZED, "Incorrect username or password");
         }
 
-        User user = userRepository.findByEmail(req.email())
-                .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "Incorrect email or password"));
+        User user = userRepository.findByUsername(req.username())
+                .orElseThrow(() ->
+                        new ApiException(HttpStatus.UNAUTHORIZED, "Incorrect username or password"));
 
         String token = jwtService.generateToken(new UserPrincipal(user));
         return new AuthResponse(token, UserMapper.toResponse(user));

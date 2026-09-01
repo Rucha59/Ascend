@@ -56,9 +56,8 @@ export function AuthProvider({ children }) {
         });
   }, []);
 
-  const login = async (email, password) => {
-    const res = await api.post("/auth/login", { email, password });
-    const { token, user: userData } = res.data;
+  const login = async (username, password) => {
+    const res = await api.post("/auth/login", { username, password });    const { token, user: userData } = res.data;
     localStorage.setItem("sprout_token", token);
     localStorage.setItem("sprout_user", JSON.stringify(userData));
     setUser(userData);
