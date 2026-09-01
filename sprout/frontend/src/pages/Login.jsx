@@ -176,7 +176,7 @@ export default function Login() {
                     className="block text-xs font-semibold mb-2"
                     style={{ color: "#4a3f35" }}
                 >
-                  Email address
+                  Username
                 </label>
 
                 <div className="relative">
