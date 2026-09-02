@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
 import java.time.LocalTime;
+import java.util.List;
 
 public record CreateHabitRequest(
 
@@ -17,6 +18,11 @@ public record CreateHabitRequest(
         @NotBlank(message = "Color is required")
         String color,
 
-        /** Optional daily reminder, e.g. "07:00". Null means no reminder. */
-        LocalTime reminderTime
+        LocalTime reminderTime,
+
+        /** "EVERY_DAY" | "SPECIFIC_DAYS" — optional, defaults to EVERY_DAY */
+        String scheduleType,
+
+        /** Required when scheduleType = SPECIFIC_DAYS, e.g. ["MONDAY","WEDNESDAY","FRIDAY"] */
+        List<String> daysOfWeek
 ) {}

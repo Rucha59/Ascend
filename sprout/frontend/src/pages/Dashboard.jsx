@@ -45,7 +45,7 @@ function ProgressRing({ pct }) {
         <span className="font-black tracking-[-0.05em]" style={{ color: "#C85C22", fontSize: 54, lineHeight: 1 }}>
           {Math.round(pct)}%
         </span>
-                <span className="mt-1 text-[12px] font-semibold tracking-[0.28em]" style={{ color: "#9b8f81" }}>
+                <span className="mt-1 text-[12px] font-semibold tracking-[0.28em]" style={{ color: "var(--text-muted)" }}>
           DONE
         </span>
             </div>
@@ -56,10 +56,15 @@ function ProgressRing({ pct }) {
 /* ─── StatCard ─── */
 function StatCard({ icon: Icon, value, label }) {
     return (
-        <div className="rounded-3xl p-4 md:p-5" style={{ background: "#fcf8f1", border: "1px solid #dbcfbf" }}>
-            <Icon size={18} color="#C85C22" />
-            <div className="mt-6 font-black text-[28px] tracking-[-0.05em]" style={{ color: "#1a1714" }}>{value}</div>
-            <div className="mt-1 text-[12px] font-bold tracking-[0.22em]" style={{ color: "#9b8f81" }}>{label}</div>
+        <div
+            className="rounded-3xl p-4 md:p-5"
+            style={{
+                background: "var(--surface)",
+                border: "1px solid var(--border)"
+            }}
+        >            <Icon size={18} color="#C85C22" />
+            <div className="mt-6 font-black text-[28px] tracking-[-0.05em]" style={{ color: "var(--text)" }}>{value}</div>
+            <div className="mt-1 text-[12px] font-bold tracking-[0.22em]" style={{ color: "var(--text)" }}>{label}</div>
         </div>
     );
 }
@@ -67,7 +72,7 @@ function StatCard({ icon: Icon, value, label }) {
 /* ─── Habit status + pill ─── */
 function HabitStatusIcon({ status }) {
     if (status === "COMPLETED") return <CheckCircle2 size={26} color="#4b7a36" />;
-    if (status === "SKIPPED")   return <MinusCircle  size={26} color="#9b8f81" />;
+    if (status === "SKIPPED")   return <MinusCircle  size={26} color="var(--text-muted)" />;
     return <Circle size={26} color="#d0c6b7" />;
 }
 
@@ -93,7 +98,7 @@ function TaskPriority({ priority }) {
     if (priority === "MEDIUM" || priority === "MED")
         return <span className="text-[13px] font-bold" style={{ color: "#7a6f64" }}>MED</span>;
     if (priority === "LOW")
-        return <span className="text-[13px] font-bold px-2 py-0.5 rounded-full" style={{ background: "#e7dfd2", color: "#9b8f81" }}>LOW</span>;
+        return <span className="text-[13px] font-bold px-2 py-0.5 rounded-full" style={{ background: "var(--surface-2)", color: "var(--text-muted)" }}>LOW</span>;
     return null;
 }
 
@@ -135,13 +140,13 @@ function QuickAddTodo({ onAdded }) {
                 onClick={openForm}
                 className="w-full rounded-[18px] px-4 py-3 flex items-center gap-3 text-[15px] font-semibold transition-colors"
                 style={{
-                    border: "1.5px dashed #d8cbb9",
+                    border: "1.5px dashed var(--border)",
                     background: "transparent",
-                    color: "#9b8f81",
+                    color: "var(--text-muted)",
                     cursor: "pointer",
                 }}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = "#C85C22"; e.currentTarget.style.color = "#C85C22"; }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = "#d8cbb9"; e.currentTarget.style.color = "#9b8f81"; }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = "var(--border)"; e.currentTarget.style.color = "var(--text-muted)"; }}
             >
                 <Plus size={16} />
                 Add today's to-do
@@ -153,7 +158,7 @@ function QuickAddTodo({ onAdded }) {
         <form
             onSubmit={submit}
             className="rounded-[18px] px-4 py-4 grid gap-3"
-            style={{ background: "#fcf8f1", border: "1.5px solid #C85C22" }}
+            style={{ background: "var(--surface)", border: "1.5px solid #C85C22" }}
         >
             <input
                 ref={inputRef}
@@ -162,7 +167,7 @@ function QuickAddTodo({ onAdded }) {
                 placeholder="What needs doing today?"
                 style={{
                     width: "100%", border: "none", outline: "none", background: "transparent",
-                    fontSize: "17px", fontWeight: 600, color: "#1a1714",
+                    fontSize: "17px", fontWeight: 600, color: "var(--text)",
                 }}
             />
             <div className="flex items-center gap-2 flex-wrap">
@@ -174,8 +179,8 @@ function QuickAddTodo({ onAdded }) {
                         onClick={() => setPriority(p.id)}
                         className="px-3 py-1 rounded-full text-[12px] font-bold transition-opacity"
                         style={{
-                            background: priority === p.id ? p.bg : "#e7dfd2",
-                            color: priority === p.id ? p.fg : "#9b8f81",
+                            background: priority === p.id ? p.bg : "var(--surface-2)",
+                            color: priority === p.id ? p.fg : "var(--text-muted)",
                             border: `1.5px solid ${priority === p.id ? p.fg + "44" : "transparent"}`,
                             cursor: "pointer",
                             opacity: 1,
@@ -191,7 +196,7 @@ function QuickAddTodo({ onAdded }) {
                 <button
                     type="button"
                     onClick={close}
-                    style={{ background: "none", border: "none", cursor: "pointer", padding: 4, color: "#9b8f81" }}
+                    style={{ background: "none", border: "none", cursor: "pointer", padding: 4, color: "var(--text-muted)" }}
                 >
                     <X size={16} />
                 </button>
@@ -202,8 +207,8 @@ function QuickAddTodo({ onAdded }) {
                     disabled={!title.trim() || saving}
                     className="px-5 py-1.5 rounded-full text-[13px] font-bold"
                     style={{
-                        background: title.trim() && !saving ? "#C85C22" : "#e7dfd2",
-                        color: title.trim() && !saving ? "#fff" : "#9b8f81",
+                        background: title.trim() && !saving ? "#C85C22" : "var(--surface-2)",
+                        color: title.trim() && !saving ? "#fff" : "var(--text-muted)",
                         border: "none",
                         cursor: title.trim() && !saving ? "pointer" : "not-allowed",
                     }}
@@ -227,9 +232,9 @@ function TodoRow({ item, onToggleTask, onToggleChecklist }) {
             >
                 <FolderKanban size={17} color="#C85C22" style={{ flexShrink: 0 }} />
                 <div style={{ flex: 1, minWidth: 0 }}>
-                    <span className="font-bold text-[16px]" style={{ color: "#1a1714" }}>{item.title}</span>
+                    <span className="font-bold text-[16px]" style={{ color: "var(--text)" }}>{item.title}</span>
                     {item.projectName && (
-                        <span className="text-[13px] ml-2" style={{ color: "#9b8f81" }}>{item.projectName}</span>
+                        <span className="text-[13px] ml-2" style={{ color: "var(--text-muted)" }}>{item.projectName}</span>
                     )}
                 </div>
                 <span
@@ -248,8 +253,8 @@ function TodoRow({ item, onToggleTask, onToggleChecklist }) {
             <div
                 className="rounded-[18px] flex items-center gap-4"
                 style={{
-                    background: "#fcf8f1",
-                    border: "1px solid #d8cbb9",
+                    background: "var(--surface)",
+                    border: "1px solid var(--border)",
                     padding: "10px 16px 10px 40px",  /* 40px left = visual indent */
                 }}
             >
@@ -274,7 +279,7 @@ function TodoRow({ item, onToggleTask, onToggleChecklist }) {
                     className="text-[15px]"
                     style={{
                         flex: 1,
-                        color: item.completed ? "#9b8f81" : "#1a1714",
+                        color: item.completed ? "var(--text-muted)" : "var(--text)",
                         textDecoration: item.completed ? "line-through" : "none",
                     }}
                 >
@@ -294,14 +299,14 @@ function TodoRow({ item, onToggleTask, onToggleChecklist }) {
         return (
             <div
                 className="rounded-[18px] px-4 py-3 flex items-center gap-4"
-                style={{ background: "#fcf8f1", border: "1px solid #d8cbb9" }}
+                style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
             >
         <span className="text-[13px] font-bold shrink-0" style={{ color: "#C85C22", minWidth: 56 }}>
           {time}
         </span>
-                <span className="flex-1 text-[17px]" style={{ color: "#1a1714" }}>{item.title}</span>
+                <span className="flex-1 text-[17px]" style={{ color: "var(--text)" }}>{item.title}</span>
                 {item.notes && (
-                    <span className="text-[13px]" style={{ color: "#9b8f81" }}>{item.notes}</span>
+                    <span className="text-[13px]" style={{ color: "var(--text-muted)" }}>{item.notes}</span>
                 )}
                 <span className="px-2 py-0.5 rounded-full text-[11px] font-bold shrink-0" style={{ background: "#e8e3da", color: "#8b8174" }}>
           CAL
@@ -314,7 +319,7 @@ function TodoRow({ item, onToggleTask, onToggleChecklist }) {
     return (
         <div
             className="rounded-[18px] px-4 py-3 flex items-center gap-4"
-            style={{ background: "#fcf8f1", border: "1px solid #d8cbb9" }}
+            style={{ background: "var(--surface)", border: "1px solid var(--border)" }}
         >
             <button
                 onClick={() => onToggleTask(item)}
@@ -337,7 +342,7 @@ function TodoRow({ item, onToggleTask, onToggleChecklist }) {
 
             <span
                 className={`flex-1 text-[17px] ${item.completed ? "line-through" : ""}`}
-                style={{ color: item.completed ? "#9b8f81" : "#1a1714" }}
+                style={{ color: item.completed ? "var(--text-muted)" : "var(--text)" }}
             >
         {item.title}
       </span>
@@ -438,7 +443,7 @@ export default function Dashboard() {
     };
 
     if (loading || !today) {
-        return <div className="pt-6" style={{ color: "#8f8577" }}>Loading dashboard…</div>;
+        return <div className="pt-6" style={{ color: "var(--text-muted)" }}>Loading dashboard…</div>;
     }
 
     /* Partition todo items by type */
@@ -448,7 +453,7 @@ export default function Dashboard() {
     const hasTodos       = taskRows.length > 0 || milestoneBlock.length > 0 || calRows.length > 0;
 
     return (
-        <div className="pt-8 pb-12 px-8 grid gap-8" style={{ color: "#1a1714" }}>
+        <div className="pt-8 pb-12 px-8 grid gap-8" style={{ color: "var(--text)" }}>
 
             {error && (
                 <p className="text-sm px-3 py-2 rounded-xl" style={{ background: "#FF88AA22", color: "#D1467A" }}>
@@ -462,7 +467,7 @@ export default function Dashboard() {
                     <div className="flex-shrink-0">
                         <div style={{
                             width: 150, height: 150, minWidth: 150, borderRadius: "50%",
-                            background: "#FCF8F1", border: "3px solid #C85C22",
+                            background: "var(--surface)", border: "3px solid #C85C22",
                             boxShadow: "0 10px 25px rgba(200,92,34,0.10)",
                             display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
                         }}>
@@ -472,10 +477,10 @@ export default function Dashboard() {
                     </div>
                     <div style={{ marginLeft: "2rem" }}>
                         <h1 style={{ fontSize: "clamp(1.8rem,2.5vw,2.5rem)", lineHeight: 1.2, margin: 0 }}>
-                            <span style={{ color: "#8f8577", fontWeight: 500 }}>{greeting},</span>{" "}
-                            <span style={{ color: "#1a1714", fontWeight: 800 }}>{displayName}</span>
+                            <span style={{ color: "var(--text-muted)", fontWeight: 500 }}>{greeting},</span>{" "}
+                            <span style={{ color: "var(--text)", fontWeight: 800 }}>{displayName}</span>
                         </h1>
-                        <p className="italic mt-5" style={{ fontSize: 19, color: "#8f8577", lineHeight: 1.6, maxWidth: 650 }}>
+                        <p className="italic mt-5" style={{ fontSize: 19, color: "var(--text-muted)", lineHeight: 1.6, maxWidth: 650 }}>
                             "{quote}"
                         </p>
                     </div>
@@ -490,20 +495,20 @@ export default function Dashboard() {
             </section>
 
             {/* ── Progress ring card ── */}
-            <section className="rounded-[28px] p-6 md:p-8 max-w-[1100px] mx-auto w-full" style={{ background: "#fcf8f1", border: "1px solid #d8cbb9" }}>
+            <section className="rounded-[28px] p-6 md:p-8 max-w-[1100px] mx-auto w-full" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
                 <div className="grid gap-6 md:grid-cols-[230px_1fr] items-center">
                     <div className="flex justify-center"><ProgressRing pct={pct} /></div>
                     <div>
                         <h2 className="font-black tracking-[-0.05em]" style={{ fontSize: "clamp(1.5rem,2.5vw,2rem)" }}>
                             {completedCount} of {totalCount} done
                         </h2>
-                        <p className="mt-2 text-[18px]" style={{ color: "#766d63" }}>
+                        <p className="mt-2 text-[18px]" style={{ color: "var(--text-muted)" }}>
                             {totalCount - completedCount > 0 ? `${totalCount - completedCount} habits left today.` : "All done for today! 🎉"}
                         </p>
-                        <div className="mt-5 h-2 rounded-full overflow-hidden" style={{ background: "#e7dfd2" }}>
+                        <div className="mt-5 h-2 rounded-full overflow-hidden" style={{ background: "var(--surface-2)" }}>
                             <div className="h-full rounded-full" style={{ width: `${pct}%`, background: "#C85C22" }} />
                         </div>
-                        <blockquote className="mt-6 pl-4 border-l-2 italic text-[17px]" style={{ borderColor: "#C85C22", color: "#8a8073" }}>
+                        <blockquote className="mt-6 pl-4 border-l-2 italic text-[17px]" style={{ borderColor: "#C85C22", color: "var(--text-muted)" }}>
                             "Every day is a chance to outperform yesterday."
                         </blockquote>
                     </div>
@@ -517,15 +522,15 @@ export default function Dashboard() {
                         TODAY'S HABITS
                     </h2>
                     <Link to="/habits" className="px-4 py-2 rounded-full text-[14px] font-semibold"
-                          style={{ border: "1px solid #dbcfbf", color: "#C85C22", background: "#fcf8f1" }}>
+                          style={{ border: "1px solid #dbcfbf", color: "#C85C22", background: "var(--surface)" }}>
                         + Manage
                     </Link>
                 </div>
 
                 <div className="grid gap-3">
                     {habits.length === 0 && (
-                        <div className="rounded-[20px] px-4 py-8 text-center" style={{ background: "#fcf8f1", border: "1px solid #d8cbb9" }}>
-                            <p style={{ color: "#9b8f81" }}>No habits yet.</p>
+                        <div className="rounded-[20px] px-4 py-8 text-center" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+                            <p style={{ color: "var(--text-muted)" }}>No habits yet.</p>
                             <Link to="/habits" className="inline-block mt-3 px-5 py-2 rounded-full text-[14px] font-bold"
                                   style={{ background: "#C85C22", color: "#fff" }}>
                                 Add a habit
@@ -537,16 +542,16 @@ export default function Dashboard() {
                         const done = habit.status === "COMPLETED";
                         return (
                             <div key={habit.habitId} className="rounded-[20px] px-4 py-3 flex items-center gap-4"
-                                 style={{ background: "#fcf8f1", border: "1px solid #d8cbb9" }}>
+                                 style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
                                 <button onClick={() => handleHabitClick(habit)} className="shrink-0" aria-label="Toggle habit"
                                         style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}>
                                     <HabitStatusIcon status={habit.status} />
                                 </button>
                                 <span className="w-3 h-3 rounded-full shrink-0" style={{ background: habit.color }} />
-                                <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: "#fff8ef" }}>
+                                <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0" style={{ background: "var(--surface-2)" }}>
                                     <Icon size={16} color={habit.color} />
                                 </div>
-                                <p className={`flex-1 text-[17px] ${done ? "line-through" : ""}`} style={{ color: done ? "#8f8577" : "#1a1714" }}>
+                                <p className={`flex-1 text-[17px] ${done ? "line-through" : ""}`} style={{ color: done ? "var(--text-muted)" : "var(--text)" }}>
                                     {habit.title}
                                 </p>
                                 <StatusPill status={habit.status} />
@@ -563,26 +568,26 @@ export default function Dashboard() {
             {/* ── Journal + Analytics quick links ── */}
             <section className="max-w-[1100px] mx-auto w-full grid gap-4 md:grid-cols-2">
                 <Link to="/journal" className="rounded-[20px] px-5 py-4 flex items-center justify-between"
-                      style={{ background: "#fcf8f1", border: "1px solid #d8cbb9", textDecoration: "none" }}>
+                      style={{ background: "var(--surface)", border: "1px solid var(--border)", textDecoration: "none" }}>
                     <div className="flex items-center gap-3">
                         <BookOpen size={18} color="#C85C22" />
                         <div>
-                            <p className="font-bold" style={{ color: "#1a1714" }}>Journal</p>
-                            <p className="text-[14px]" style={{ color: "#766d63" }}>Write today's entry</p>
+                            <p className="font-bold" style={{ color: "var(--text)" }}>Journal</p>
+                            <p className="text-[14px]" style={{ color: "var(--text-muted)" }}>Write today's entry</p>
                         </div>
                     </div>
-                    <ChevronRight size={18} color="#8f8577" />
+                    <ChevronRight size={18} color="var(--text-muted)" />
                 </Link>
                 <Link to="/analytics" className="rounded-[20px] px-5 py-4 flex items-center justify-between"
-                      style={{ background: "#fcf8f1", border: "1px solid #d8cbb9", textDecoration: "none" }}>
+                      style={{ background: "var(--surface)", border: "1px solid var(--border)", textDecoration: "none" }}>
                     <div className="flex items-center gap-3">
                         <TrendingUp size={18} color="#C85C22" />
                         <div>
-                            <p className="font-bold" style={{ color: "#1a1714" }}>Analytics</p>
-                            <p className="text-[14px]" style={{ color: "#766d63" }}>See your progress</p>
+                            <p className="font-bold" style={{ color: "var(--text)" }}>Analytics</p>
+                            <p className="text-[14px]" style={{ color: "var(--text-muted)" }}>See your progress</p>
                         </div>
                     </div>
-                    <ChevronRight size={18} color="#8f8577" />
+                    <ChevronRight size={18} color="var(--text-muted)" />
                 </Link>
             </section>
 
@@ -593,7 +598,7 @@ export default function Dashboard() {
                         TODAY'S TASKS
                     </h2>
                     <Link to="/todos" className="px-4 py-2 rounded-full text-[14px] font-semibold"
-                          style={{ border: "1px solid #dbcfbf", color: "#C85C22", background: "#fcf8f1" }}>
+                          style={{ border: "1px solid #dbcfbf", color: "#C85C22", background: "var(--surface)" }}>
                         + Manage
                     </Link>
                 </div>
@@ -640,8 +645,8 @@ export default function Dashboard() {
 
                     {/* Empty state */}
                     {!hasTodos && (
-                        <div className="rounded-[18px] px-4 py-6 text-center" style={{ background: "#fcf8f1", border: "1px solid #d8cbb9" }}>
-                            <p style={{ color: "#9b8f81", fontSize: 16 }}>Nothing due today.</p>
+                        <div className="rounded-[18px] px-4 py-6 text-center" style={{ background: "var(--surface)", border: "1px solid var(--border)" }}>
+                            <p style={{ color: "var(--text-muted)", fontSize: 16 }}>Nothing due today.</p>
                         </div>
                     )}
 

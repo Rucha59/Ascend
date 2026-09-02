@@ -5,7 +5,9 @@ import lombok.*;
 
 import java.time.Instant;
 import java.time.LocalTime;
-
+import java.time.DayOfWeek;
+import java.util.HashSet;
+import java.util.Set;
 @Entity
 @Table(name = "habits")
 @Getter
@@ -36,6 +38,18 @@ public class Habit {
 
     /** Optional daily reminder time-of-day. */
     private LocalTime reminderTime;
+
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private HabitScheduleType scheduleType = HabitScheduleType.EVERY_DAY;
+
+    @Builder.Default
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "habit_schedule_days", joinColumns = @JoinColumn(name = "habit_id"))
+    @Enumerated(EnumType.STRING)
+    @Column(name = "day_of_week", nullable = false)
+    private Set<DayOfWeek> scheduledDays = new HashSet<>();
 
     @Builder.Default
     @Column(nullable = false)

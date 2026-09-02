@@ -12,7 +12,7 @@ public final class ChallengeDayCalculator {
     public static int dayNumberFor(LocalDate startDate, LocalDate date) {
         if (startDate == null) return 1;
         long days = ChronoUnit.DAYS.between(startDate, date);
-        return (int) Math.max(1, days + 1);
+        return (int) (days + 1);
     }
 
     /** Inverse of dayNumberFor: the calendar date that corresponds to a given day number. */

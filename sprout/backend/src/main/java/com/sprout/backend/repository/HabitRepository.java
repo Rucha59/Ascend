@@ -11,4 +11,8 @@ public interface HabitRepository extends JpaRepository<Habit, Long> {
     List<Habit> findByUserIdAndActiveTrueOrderByCreatedAtAsc(Long userId);
 
     Optional<Habit> findByIdAndUserId(Long id, Long userId);
+
+    boolean existsByUserIdAndTitleIgnoreCaseAndActiveTrue(Long userId, String title);
+
+    boolean existsByUserIdAndTitleIgnoreCaseAndActiveTrueAndIdNot(Long userId, String title, Long id);
 }

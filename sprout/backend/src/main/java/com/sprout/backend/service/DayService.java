@@ -6,6 +6,7 @@ import com.sprout.backend.dto.response.HabitStatusResponse;
 import com.sprout.backend.dto.response.TodayResponse;
 import com.sprout.backend.entity.Habit;
 import com.sprout.backend.entity.HabitLog;
+import com.sprout.backend.entity.HabitScheduleType;
 import com.sprout.backend.entity.User;
 import com.sprout.backend.exception.ApiException;
 import com.sprout.backend.repository.HabitLogRepository;
@@ -19,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
@@ -45,8 +47,9 @@ public class DayService {
     @Transactional(readOnly = true)
     public TodayResponse getToday(UserPrincipal principal) {
         LocalDate startDate = principal.getUser().getChallengeStartDate();
-        int dayNumber = ChallengeDayCalculator.dayNumberFor(startDate, LocalDate.now());
-        return buildForDay(principal, dayNumber);
+        LocalDate date = LocalDate.now();
+        int dayNumber = ChallengeDayCalculator.dayNumberFor(startDate, date);
+        return buildForDate(principal, date, dayNumber);
     }
 
     @Transactional(readOnly = true)
@@ -54,14 +57,24 @@ public class DayService {
         if (dayNumber < 1 || dayNumber > 365) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "Day must be between 1 and 365");
         }
-        return buildForDay(principal, dayNumber);
-    }
-
-    private TodayResponse buildForDay(UserPrincipal principal, int dayNumber) {
         User user = principal.getUser();
         LocalDate date = ChallengeDayCalculator.dateForDayNumber(user.getChallengeStartDate(), dayNumber);
+        return buildForDate(principal, date, dayNumber);
+    }
 
-        List<Habit> habits = habitRepository.findByUserIdAndActiveTrueOrderByCreatedAtAsc(user.getId());
+    @Transactional(readOnly = true)
+    public TodayResponse getForDate(UserPrincipal principal, LocalDate date) {
+        LocalDate startDate = principal.getUser().getChallengeStartDate();
+        int dayNumber = ChallengeDayCalculator.dayNumberFor(startDate, date);
+        return buildForDate(principal, date, dayNumber);
+    }
+
+    private TodayResponse buildForDate(UserPrincipal principal, LocalDate date, int dayNumber) {
+        User user = principal.getUser();
+
+        List<Habit> habits = habitRepository.findByUserIdAndActiveTrueOrderByCreatedAtAsc(user.getId()).stream()
+                .filter(h -> isScheduledFor(h, date.getDayOfWeek()))
+                .toList();
         Map<Long, HabitLog> logByHabitId = new HashMap<>();
         for (HabitLog log : habitLogRepository.findByUserIdAndLogDate(user.getId(), date)) {
             logByHabitId.put(log.getHabit().getId(), log);
@@ -91,4 +104,10 @@ public class DayService {
                 dayNumber, totalDays, date, quote, habitStatuses,
                 completedCount, totalCount, completionPercentage, hasJournalEntry);
     }
+
+    private boolean isScheduledFor(Habit habit, DayOfWeek dayOfWeek) {
+        if (habit.getScheduleType() == HabitScheduleType.EVERY_DAY) return true;
+        return habit.getScheduledDays().contains(dayOfWeek);
+    }
+
 }

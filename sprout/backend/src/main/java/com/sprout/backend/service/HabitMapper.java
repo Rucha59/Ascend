@@ -16,6 +16,10 @@ public final class HabitMapper {
     private HabitMapper() {}
 
     public static HabitResponse toResponse(Habit habit) {
+        List<String> days = habit.getScheduledDays().stream()
+                .sorted()
+                .map(Enum::name)
+                .toList();
         return new HabitResponse(
                 habit.getId(),
                 habit.getTitle(),
@@ -23,7 +27,9 @@ public final class HabitMapper {
                 habit.getColor(),
                 habit.getReminderTime(),
                 habit.getActive(),
-                habit.getCreatedAt()
+                habit.getCreatedAt(),
+                habit.getScheduleType().name(),
+                days
         );
     }
 
