@@ -14,6 +14,8 @@ import Journal from "./pages/Journal";
 import Analytics from "./pages/Analytics";
 import Profile from "./pages/Profile";
 import SupabaseCallback from "./pages/SupabaseCallback.jsx";
+import HomeRoute from "./components/HomeRoute";
+import Privacy from "./pages/Privacy";
 
 export default function App() {
   return (
@@ -21,6 +23,9 @@ export default function App() {
         <AuthProvider>
           <BrowserRouter>
             <Routes>
+              {/* Public landing page */}
+              <Route path="/" element={<HomeRoute />} />
+
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
@@ -30,7 +35,7 @@ export default function App() {
               />
               <Route element={<ProtectedRoute />}>
                 <Route element={<Layout />}>
-                  <Route path="/" element={<Dashboard />} />
+                  <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/habits" element={<Habits />} />
                   <Route path="/todos" element={<Todos />} />
                   <Route path="/projects" element={<Projects />} />
@@ -39,6 +44,9 @@ export default function App() {
                   <Route path="/profile" element={<Profile />} />
                 </Route>
               </Route>
+              {/* Unknown URL */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+
             </Routes>
           </BrowserRouter>
         </AuthProvider>
