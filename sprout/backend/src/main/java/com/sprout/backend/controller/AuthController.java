@@ -1,6 +1,7 @@
 package com.sprout.backend.controller;
 
 import com.sprout.backend.dto.request.LoginRequest;
+import com.sprout.backend.dto.request.RegisterOAuthRequest;
 import com.sprout.backend.dto.request.RegisterRequest;
 import com.sprout.backend.dto.response.AuthResponse;
 import com.sprout.backend.service.AuthService;
@@ -25,5 +26,12 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         return ResponseEntity.ok(authService.login(request));
+    }
+
+    @PostMapping("/register-oauth")
+    public ResponseEntity<AuthResponse> registerOAuth(
+            @RequestBody RegisterOAuthRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(authService.registerOAuth(request));
     }
 }

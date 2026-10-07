@@ -25,6 +25,31 @@ public class JwtService {
     private SecretKey key() {
         return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
+    @Value("${sprout.supabase.jwt-secret:}")
+    private String supabaseJwtSecret;
+
+    public String extractEmailFromSupabaseToken(String token) {
+        try {
+            if (supabaseJwtSecret == null || supabaseJwtSecret.isBlank()) {
+                return null;
+            }
+
+            SecretKey key = Keys.hmacShaKeyFor(
+                    supabaseJwtSecret.getBytes(StandardCharsets.UTF_8)
+            );
+
+            Claims claims = Jwts.parser()
+                    .verifyWith(key)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+
+            return claims.get("email", String.class);
+
+        } catch (Exception e) {
+            return null;
+        }
+    }
 
     public String generateToken(UserPrincipal principal) {
         Instant now = Instant.now();

@@ -1,15 +1,22 @@
 spring:
-#  config:
-#    import:
-#      - "optional:file:./.env[.properties]"
-#      - "optional:file:../.env[.properties]"
+  config:
+    import:
+      - "optional:file:./.env[.properties]"
+      - "optional:file:../.env[.properties]"
   application:
     name: sprout-backend
+  sprout:
+    supabase:
+      url: ${SUPABASE_URL}
+      service-key: ${SUPABASE_SERVICE_KEY}
+      jwt-secret: ${SUPABASE_JWT_SECRET}   # ← add this
+      journal-bucket: ${SUPABASE_JOURNAL_BUCKET:journal-images}
+      evidence-bucket: ${SUPABASE_EVIDENCE_BUCKET:habit-evidence}
+spring:
   datasource:
-#    url: jdbc:postgresql://localhost:5432/${DB_NAME:Sprout}
     url: ${DATABASE_URL}
-    username: ${DB_USERNAME:postgres}
-    password: ${DB_PASSWORD:}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
   jpa:
     hibernate:
       # Fine for local Phase 1 dev. Swap for Flyway/Liquibase migrations before this touches production.
@@ -50,7 +57,7 @@ sprout:
     secret: ${JWT_SECRET:sprout-dev-secret-change-me-please-this-must-be-at-least-32-bytes-long}
     expiration-ms: ${JWT_EXPIRATION_MS:86400000} # 24h
   cors:
-#    allowed-origin: ${CORS_ALLOWED_ORIGIN:http://localhost:5173}
-    allowed-origin: ${CORS_ALLOWED_ORIGIN}
+    allowed-origin: ${CORS_ALLOWED_ORIGIN:http://localhost:5173}
+#    allowed-origin: ${CORS_ALLOWED_ORIGIN}
   oauth2:
     frontend-redirect-uri: ${OAUTH2_FRONTEND_REDIRECT_URI:http://localhost:5173/oauth2/callback}

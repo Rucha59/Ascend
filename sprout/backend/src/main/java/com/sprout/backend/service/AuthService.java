@@ -1,6 +1,7 @@
 package com.sprout.backend.service;
 
 import com.sprout.backend.dto.request.LoginRequest;
+import com.sprout.backend.dto.request.RegisterOAuthRequest;
 import com.sprout.backend.dto.request.RegisterRequest;
 import com.sprout.backend.dto.response.AuthResponse;
 import com.sprout.backend.entity.User;
@@ -17,6 +18,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -67,5 +69,35 @@ public class AuthService {
 
         String token = jwtService.generateToken(new UserPrincipal(user));
         return new AuthResponse(token, UserMapper.toResponse(user));
+    }
+
+    public AuthResponse registerOAuth(RegisterOAuthRequest req) {
+        // If user already exists (e.g. second sign-in), just return their profile
+        return userRepository.findByEmail(req.email())
+                .map(existing -> new AuthResponse(null, UserMapper.toResponse(existing)))
+                .orElseGet(() -> {
+                    User user = User.builder()
+                            .name(req.name())
+                            .username(sanitizeUsername(req.username()))
+                            .email(req.email())
+                            .password(passwordEncoder.encode(UUID.randomUUID().toString()))
+                            .timezone("UTC")
+                            .challengeStartDate(LocalDate.now())
+                            .currentStreak(0)
+                            .longestStreak(0)
+                            .build();
+                    user = userRepository.save(user);
+                    return new AuthResponse(null, UserMapper.toResponse(user));
+                });
+    }
+
+    private String sanitizeUsername(String username) {
+        // Ensure uniqueness if collision
+        String base = username;
+        int attempts = 0;
+        while (userRepository.existsByUsername(base) && attempts++ < 5) {
+            base = username + "_" + (int)(Math.random() * 9000 + 1000);
+        }
+        return base;
     }
 }
