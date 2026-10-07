@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import api from "../api/axios";
-
+import { supabase } from "../lib/supabase";
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
@@ -73,6 +73,19 @@ export function AuthProvider({ children }) {
     return userData;
   };
 
+  const googleLogin = async () => {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/supabase-callback`,
+      },
+    });
+
+    if (error) {
+      throw error;
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem("sprout_token");
     localStorage.removeItem("sprout_user");
@@ -80,7 +93,17 @@ export function AuthProvider({ children }) {
   };
 
   return (
-      <AuthContext.Provider value={{ user, setUser, loading, login, register, logout }}>
+      <AuthContext.Provider
+          value={{
+            user,
+            setUser,
+            loading,
+            login,
+            register,
+            googleLogin,
+            logout,
+          }}
+      >
         {children}
       </AuthContext.Provider>
   );
