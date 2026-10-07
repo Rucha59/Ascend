@@ -12,7 +12,7 @@ spring:
       jwt-secret: ${SUPABASE_JWT_SECRET}   # ← add this
       journal-bucket: ${SUPABASE_JOURNAL_BUCKET:journal-images}
       evidence-bucket: ${SUPABASE_EVIDENCE_BUCKET:habit-evidence}
-spring:
+
   datasource:
     url: ${DATABASE_URL}
     username: ${DB_USERNAME}
