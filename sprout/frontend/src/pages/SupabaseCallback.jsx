@@ -27,33 +27,50 @@ export default function SupabaseCallback() {
                 }
 
                 // Temporarily store the Supabase access token.
-                localStorage.setItem(
-                    "sprout_token",
-                    session.access_token
+                const response = await api.post(
+                    "/auth/register-oauth",
+                    {
+                        email: session.user.email,
+                        name:
+                            session.user.user_metadata?.full_name ||
+                            session.user.user_metadata?.name ||
+                            "",
+                        username:
+                            session.user.user_metadata?.user_name ||
+                            session.user.email?.split("@")[0] ||
+                            "",
+                    },
+                    {
+                        headers: {
+                            Authorization: `Bearer ${session.access_token}`,
+                        },
+                    }
                 );
 
                 // Ask Spring Boot to find/create the Sprout user.
-                const response = await api.post("/auth/register-oauth", {
-                    email: session.user.email,
-                    name:
-                        session.user.user_metadata?.full_name ||
-                        session.user.user_metadata?.name ||
-                        "",
-                    username:
-                        session.user.user_metadata?.user_name ||
-                        session.user.email?.split("@")[0] ||
-                        "",
-                });
+                // const response = await api.post("/auth/register-oauth", {
+                //     email: session.user.email,
+                //     name:
+                //         session.user.user_metadata?.full_name ||
+                //         session.user.user_metadata?.name ||
+                //         "",
+                //     username:
+                //         session.user.user_metadata?.user_name ||
+                //         session.user.email?.split("@")[0] ||
+                //         "",
+                // });
 
                 const userData = response.data.user;
+                const sproutToken = response.data.token;
 
-                localStorage.setItem(
-                    "sprout_user",
-                    JSON.stringify(userData)
-                );
+                if (!sproutToken) {
+                    throw new Error("Backend did not return a Sprout token.");
+                }
+
+                localStorage.setItem("sprout_token", sproutToken);
+                localStorage.setItem("sprout_user", JSON.stringify(userData));
 
                 setUser(userData);
-
                 navigate("/", { replace: true });
             } catch (err) {
                 console.error("Supabase Google login failed:", err);

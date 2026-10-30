@@ -21,6 +21,15 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.security.oauth2.core.OAuth2Error;
+import org.springframework.security.oauth2.core.OAuth2TokenValidator;
+import org.springframework.security.oauth2.core.OAuth2TokenValidatorResult;
+import org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator;
+import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtValidators;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 
 import java.util.List;
 
@@ -88,5 +97,44 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
+    }
+
+    @Bean
+    public JwtDecoder supabaseJwtDecoder(
+            @Value("${sprout.supabase.url}") String supabaseUrl) {
+
+        String issuer = supabaseUrl + "/auth/v1";
+        String jwksUri = issuer + "/.well-known/jwks.json";
+
+        NimbusJwtDecoder decoder = NimbusJwtDecoder
+                .withJwkSetUri(jwksUri)
+                .jwsAlgorithm(SignatureAlgorithm.ES256)
+                .build();
+
+        OAuth2TokenValidator<Jwt> issuerValidator =
+                JwtValidators.createDefaultWithIssuer(issuer);
+
+        OAuth2TokenValidator<Jwt> audienceValidator = jwt -> {
+            if (jwt.getAudience().contains("authenticated")) {
+                return OAuth2TokenValidatorResult.success();
+            }
+
+            return OAuth2TokenValidatorResult.failure(
+                    new OAuth2Error(
+                            "invalid_token",
+                            "Required audience is missing",
+                            null
+                    )
+            );
+        };
+
+        decoder.setJwtValidator(
+                new DelegatingOAuth2TokenValidator<>(
+                        issuerValidator,
+                        audienceValidator
+                )
+        );
+
+        return decoder;
     }
 }

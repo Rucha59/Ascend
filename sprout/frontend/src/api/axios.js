@@ -28,5 +28,13 @@ api.interceptors.response.use(
         return Promise.reject(err);
     }
 );
+api.interceptors.request.use((config) => {
+    const token = localStorage.getItem("sprout_token");
 
+    if (token && !config.headers.Authorization) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+});
 export default api;
