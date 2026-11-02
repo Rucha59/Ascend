@@ -72,11 +72,10 @@ public class AuthService {
     }
 
     public AuthResponse registerOAuth(RegisterOAuthRequest req) {
-        // If user already exists (e.g. second sign-in), just return their profile
-        return userRepository.findByEmail(req.email())
-                .map(existing -> new AuthResponse(null, UserMapper.toResponse(existing)))
+
+        User user = userRepository.findByEmail(req.email())
                 .orElseGet(() -> {
-                    User user = User.builder()
+                    User newUser = User.builder()
                             .name(req.name())
                             .username(sanitizeUsername(req.username()))
                             .email(req.email())
@@ -86,9 +85,14 @@ public class AuthService {
                             .currentStreak(0)
                             .longestStreak(0)
                             .build();
-                    user = userRepository.save(user);
-                    return new AuthResponse(null, UserMapper.toResponse(user));
+
+                    return userRepository.save(newUser);
                 });
+
+        // Generate Sprout JWT for BOTH existing and new users
+        String token = jwtService.generateToken(new UserPrincipal(user));
+
+        return new AuthResponse(token, UserMapper.toResponse(user));
     }
 
     private String sanitizeUsername(String username) {
