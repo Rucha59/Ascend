@@ -34,17 +34,20 @@ export default function Register() {
     setLoading(true);
 
     try {
-      await register(form);
-      navigate("/dashboard");
-    } catch (err) {
-      const data = err.response?.data;
+      const result = await register(form);
 
-      if (data?.fieldErrors) {
-        setFieldErrors(data.fieldErrors);
+      if (result.requiresVerification) {
+        navigate(
+            `/verify-email?email=${encodeURIComponent(
+                form.email.trim().toLowerCase()
+            )}`
+        );
+      } else {
+        navigate("/dashboard");
       }
-
+    } catch (err) {
       setError(
-          data?.message ||
+          err.message ||
           "Couldn't create your account. Please try again."
       );
     } finally {

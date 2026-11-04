@@ -16,6 +16,7 @@ import Profile from "./pages/Profile";
 import SupabaseCallback from "./pages/SupabaseCallback.jsx";
 import HomeRoute from "./components/HomeRoute";
 import Privacy from "./pages/Privacy";
+import VerifyEmail from "./pages/VerifyEmail";
 
 export default function App() {
   return (
@@ -33,6 +34,7 @@ export default function App() {
                   path="/auth/supabase-callback"
                   element={<SupabaseCallback />}
               />
+              <Route path="/verify-email" element={<VerifyEmail />} />
               <Route element={<ProtectedRoute />}>
                 <Route element={<Layout />}>
                   <Route path="/dashboard" element={<Dashboard />} />

@@ -37,13 +37,13 @@ public class AuthController {
         return ResponseEntity.ok(authService.login(request));
     }
 
-    @PostMapping("/register-oauth")
+
+    @PostMapping({"/register-oauth", "/supabase"})
     public ResponseEntity<AuthResponse> registerOAuth(
             @RequestHeader(value = "Authorization", required = false)
             String authorization) {
 
-        if (authorization == null ||
-                !authorization.startsWith("Bearer ")) {
+        if (authorization == null || !authorization.startsWith("Bearer ")) {
             throw new ResponseStatusException(
                     HttpStatus.UNAUTHORIZED,
                     "Missing Supabase access token"
@@ -51,10 +51,9 @@ public class AuthController {
         }
 
         Jwt jwt;
+
         try {
-            jwt = supabaseJwtDecoder.decode(
-                    authorization.substring(7)
-            );
+            jwt = supabaseJwtDecoder.decode(authorization.substring(7));
         } catch (JwtException ex) {
             throw new ResponseStatusException(
                     HttpStatus.UNAUTHORIZED,
@@ -63,30 +62,34 @@ public class AuthController {
         }
 
         String email = jwt.getClaimAsString("email");
-        Map<String, Object> metadata =
-                jwt.getClaimAsMap("user_metadata");
+        Map<String, Object> metadata = jwt.getClaimAsMap("user_metadata");
 
-        if (email == null || email.isBlank() || metadata == null ||
-                !Boolean.TRUE.equals(metadata.get("email_verified"))) {
+        if (email == null || email.isBlank() || !email.contains("@")) {
             throw new ResponseStatusException(
                     HttpStatus.UNAUTHORIZED,
-                    "Verified Google email is required"
+                    "Valid email is required"
             );
         }
 
-        String name = metadata.get("full_name") instanceof String fullName
-                ? fullName
-                : metadata.get("name") instanceof String displayName
-                  ? displayName
-                  : email.substring(0, email.indexOf("@"));
+        String fallbackUsername = email.substring(0, email.indexOf("@"));
 
-        String username = email.substring(0, email.indexOf("@"));
+        String name = metadata != null &&
+                metadata.get("name") instanceof String value
+                ? value
+                : fallbackUsername;
 
-        RegisterOAuthRequest verifiedRequest =
+        String username = metadata != null &&
+                metadata.get("username") instanceof String value
+                ? value
+                : metadata != null &&
+                metadata.get("user_name") instanceof String value
+                  ? value
+                  : fallbackUsername;
+
+        RegisterOAuthRequest request =
                 new RegisterOAuthRequest(email, name, username);
 
-        return ResponseEntity.ok(
-                authService.registerOAuth(verifiedRequest)
-        );
+        return ResponseEntity.ok(authService.registerOAuth(request));
     }
+
 }
