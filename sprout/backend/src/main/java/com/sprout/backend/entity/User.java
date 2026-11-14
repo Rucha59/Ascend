@@ -45,7 +45,7 @@ public class User {
     private LocalDate challengeStartDate;
 
     @Builder.Default
-    @Column(name = "challenge_days", nullable = false)
+    @Column(name = "challenge_days")
     private Integer challengeDays = 75;
 
     @Builder.Default
@@ -61,6 +61,10 @@ public class User {
 
     @Column(nullable = false)
     private Instant updatedAt;
+
+    public Integer getChallengeDays() {
+        return challengeDays != null && challengeDays > 0 ? challengeDays : 75;
+    }
 
     @PrePersist
     protected void onCreate() {
