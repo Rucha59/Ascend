@@ -31,6 +31,8 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -89,7 +91,21 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of(allowedOrigin));
+
+        // Build the list of explicitly allowed origins from config (supports comma-separated values).
+        List<String> explicitOrigins = new ArrayList<>();
+        if (allowedOrigin != null && !allowedOrigin.isBlank()) {
+            Arrays.stream(allowedOrigin.split(","))
+                    .map(String::trim)
+                    .filter(s -> !s.isBlank())
+                    .forEach(explicitOrigins::add);
+        }
+        configuration.setAllowedOrigins(explicitOrigins);
+
+        // Allow Chrome Extension origins (chrome-extension://*) via pattern matching.
+        // Chrome extensions send: Origin: chrome-extension://<extension-id>
+        configuration.setAllowedOriginPatterns(List.of("chrome-extension://*"));
+
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);
