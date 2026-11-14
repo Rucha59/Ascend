@@ -45,6 +45,10 @@ public class User {
     private LocalDate challengeStartDate;
 
     @Builder.Default
+    @Column(name = "challenge_days", nullable = false)
+    private Integer challengeDays = 75;
+
+    @Builder.Default
     @Column(nullable = false)
     private Integer currentStreak = 0;
 

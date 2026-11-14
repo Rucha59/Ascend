@@ -100,8 +100,12 @@ public class DayService {
         String quote = quoteService.getQuoteForDay(dayNumber);
         boolean hasJournalEntry = journalEntryRepository.findByUserIdAndEntryDate(user.getId(), date).isPresent();
 
+        int effectiveTotalDays = user.getChallengeDays() != null && user.getChallengeDays() > 0
+                ? user.getChallengeDays()
+                : totalDays;
+
         return new TodayResponse(
-                dayNumber, totalDays, date, quote, habitStatuses,
+                dayNumber, effectiveTotalDays, date, quote, habitStatuses,
                 completedCount, totalCount, completionPercentage, hasJournalEntry);
     }
 

@@ -16,6 +16,7 @@ public final class UserMapper {
                 user.getBio(),
                 user.getTimezone(),
                 user.getChallengeStartDate(),
+                user.getChallengeDays() != null ? user.getChallengeDays() : 75,
                 user.getCurrentStreak(),
                 user.getLongestStreak(),
                 user.getCreatedAt()

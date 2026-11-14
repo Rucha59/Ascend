@@ -132,9 +132,10 @@ public class AnalyticsService {
 
         // ── Challenge day ─────────────────────────────────────────────────
         int challengeDay = ChallengeDayCalculator.dayNumberFor(user.getChallengeStartDate(), today);
+        int effectiveTotalDays = user.getChallengeDays() != null && user.getChallengeDays() > 0 ? user.getChallengeDays() : totalChallengeDays;
 
         StreakResponse streakResp = new StreakResponse(
-                streaks.current(), streaks.longest(), completedDates.size(), challengeDay, totalChallengeDays);
+                streaks.current(), streaks.longest(), completedDates.size(), challengeDay, effectiveTotalDays);
 
         return new AnalyticsResponse(
                 streakResp, allTimePct, last7Pct, last30Pct,

@@ -11,6 +11,7 @@ public record UserResponse(
         String bio,
         String timezone,
         LocalDate challengeStartDate,
+        Integer challengeDays,
         Integer currentStreak,
         Integer longestStreak,
         Instant createdAt

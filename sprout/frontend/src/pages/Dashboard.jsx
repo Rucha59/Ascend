@@ -11,6 +11,7 @@ import { getAnalytics } from "../api/analytics";
 import { getTodayTodos, quickCreateTodo, toggleTodo, toggleChecklistItem } from "../api/todos";
 import { markHabitLog } from "../api/habits";
 import { getHabitIcon } from "../lib/habitIcons";
+import ChallengeSetupModal from "../components/ChallengeSetupModal";
 
 /* ─── constants ─── */
 const CYCLE = ["COMPLETED", "MISSED", "SKIPPED"];
@@ -361,6 +362,13 @@ export default function Dashboard() {
     const [todoItems, setTodoItems] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [showChallengeSetup, setShowChallengeSetup] = useState(false);
+
+    useEffect(() => {
+        if (user?.id && !localStorage.getItem(`ascend_challenge_configured_${user.id}`)) {
+            setShowChallengeSetup(true);
+        }
+    }, [user]);
 
     const reload = async () => {
         setLoading(true);
@@ -399,7 +407,7 @@ export default function Dashboard() {
     );
     const streak    = analytics?.streaks?.currentStreak ?? 0;
     const dayNumber = analytics?.streaks?.challengeDay ?? today?.dayNumber ?? 1;
-    const totalDays = analytics?.streaks?.totalChallengeDays ?? today?.totalDays ?? 75;
+    const totalDays = user?.challengeDays ?? analytics?.streaks?.totalChallengeDays ?? today?.totalDays ?? 75;
     const completedCount = today?.completedCount ?? 0;
     const totalCount     = today?.totalCount ?? today?.habits?.length ?? 0;
     const pct   = today?.completionPercentage ?? (totalCount ? Math.round((completedCount * 100) / totalCount) : 0);
@@ -655,6 +663,16 @@ export default function Dashboard() {
 
                 </div>
             </section>
+
+            {/* Challenge duration onboarding modal for new / unconfigured users */}
+            <ChallengeSetupModal
+                isOpen={showChallengeSetup}
+                onClose={() => setShowChallengeSetup(false)}
+                onComplete={() => {
+                    setShowChallengeSetup(false);
+                    reload();
+                }}
+            />
 
         </div>
     );

@@ -1,0 +1,101 @@
+/* Ascend Theme System — Deep Seafoam (Light) + Forest Green (Dark) */
+/* Governed strictly by THEME.md */
+
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+
+  /* Deep Seafoam — Light Palette */
+  --color-primary: #187D62;
+  --color-primary-hover: #126A53;
+  --color-primary-pressed: #075440;
+  --color-primary-soft: #A5CDB8;
+  --color-primary-subtle: #DDECE5;
+
+  --color-page: #DDECE5;
+  --color-surface: #FFFFFF;
+  --color-surface-raised: #F8FCF9;
+  --color-surface-muted: #EAF3EE;
+
+  --color-text: #123D32;
+  --color-text-secondary: #456B5D;
+  --color-text-muted: #668579;
+
+  --color-border: #C5DCD0;
+  --color-border-strong: #8FB7A3;
+  --color-icon: #285D50;
+  --color-on-primary: #FFFFFF;
+  --color-accent-warm: #E2B65A;
+
+  /* Semantic status tokens */
+  --color-success: #287A52;
+  --color-warning: #9A6500;
+  --color-danger: #B83F43;
+  --color-info: #286B9A;
+
+  --color-success-surface: #E4F2E8;
+  --color-warning-surface: #FBF0D7;
+  --color-danger-surface: #F9E6E5;
+  --color-info-surface: #E5F0F8;
+
+  /* Radii */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-pill: 999px;
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* Shadows */
+  --shadow-card: 0 2px 10px rgba(18, 61, 50, 0.06);
+  --shadow-popover: 0 8px 24px rgba(18, 61, 50, 0.14);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  /* Forest Green — Dark Palette */
+  --color-primary: #35B887;
+  --color-primary-hover: #48C797;
+  --color-primary-pressed: #238F69;
+  --color-primary-soft: #1D634D;
+  --color-primary-subtle: #164B3D;
+
+  --color-page: #0D2924;
+  --color-surface: #12372F;
+  --color-surface-raised: #19463A;
+  --color-surface-muted: #1A4036;
+
+  --color-text: #E8F4ED;
+  --color-text-secondary: #B7D2C4;
+  --color-text-muted: #8EAD9E;
+
+  --color-border: #285747;
+  --color-border-strong: #3D765F;
+  --color-icon: #B7DCC9;
+  --color-on-primary: #062B20;
+  --color-accent-warm: #E2B65A;
+
+  /* Semantic status tokens */
+  --color-success: #75D6A0;
+  --color-warning: #F0C66B;
+  --color-danger: #FF8585;
+  --color-info: #83BDEB;
+
+  --color-success-surface: #174A38;
+  --color-warning-surface: #51401F;
+  --color-danger-surface: #542B2D;
+  --color-info-surface: #1B3D52;
+
+  /* Shadows */
+  --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.16);
+  --shadow-popover: 0 10px 28px rgba(0, 0, 0, 0.30);
+}

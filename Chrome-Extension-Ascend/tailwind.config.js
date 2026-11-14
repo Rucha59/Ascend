@@ -1,0 +1,58 @@
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: ["./index.html", "./sidepanel.html", "./src/**/*.{js,jsx}"],
+  darkMode: ["selector", '[data-theme="dark"]'],
+  theme: {
+    extend: {
+      colors: {
+        primary: "var(--color-primary)",
+        "primary-hover": "var(--color-primary-hover)",
+        "primary-pressed": "var(--color-primary-pressed)",
+        "primary-soft": "var(--color-primary-soft)",
+        "primary-subtle": "var(--color-primary-subtle)",
+        page: "var(--color-page)",
+        surface: "var(--color-surface)",
+        "surface-raised": "var(--color-surface-raised)",
+        "surface-muted": "var(--color-surface-muted)",
+        text: "var(--color-text)",
+        "text-secondary": "var(--color-text-secondary)",
+        "text-muted": "var(--color-text-muted)",
+        border: "var(--color-border)",
+        "border-strong": "var(--color-border-strong)",
+        icon: "var(--color-icon)",
+        "on-primary": "var(--color-on-primary)",
+        "accent-warm": "var(--color-accent-warm)",
+        success: "var(--color-success)",
+        warning: "var(--color-warning)",
+        danger: "var(--color-danger)",
+        info: "var(--color-info)",
+        "success-surface": "var(--color-success-surface)",
+        "warning-surface": "var(--color-warning-surface)",
+        "danger-surface": "var(--color-danger-surface)",
+        "info-surface": "var(--color-info-surface)",
+      },
+      borderRadius: {
+        sm: "var(--radius-sm)",
+        md: "var(--radius-md)",
+        lg: "var(--radius-lg)",
+        xl: "var(--radius-xl)",
+        pill: "var(--radius-pill)",
+      },
+      boxShadow: {
+        card: "var(--shadow-card)",
+        popover: "var(--shadow-popover)",
+      },
+      fontFamily: {
+        sans: [
+          "Inter",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          '"Segoe UI"',
+          "Roboto",
+          "sans-serif",
+        ],
+      },
+    },
+  },
+  plugins: [],
+};

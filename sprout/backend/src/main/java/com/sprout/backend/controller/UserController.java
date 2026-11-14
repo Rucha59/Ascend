@@ -1,5 +1,6 @@
 package com.sprout.backend.controller;
 
+import com.sprout.backend.dto.request.ResetChallengeRequest;
 import com.sprout.backend.dto.request.UpdateProfileRequest;
 import com.sprout.backend.dto.response.UserResponse;
 import com.sprout.backend.security.UserPrincipal;
@@ -26,5 +27,12 @@ public class UserController {
     public ResponseEntity<UserResponse> updateMe(@AuthenticationPrincipal UserPrincipal principal,
                                                   @Valid @RequestBody UpdateProfileRequest request) {
         return ResponseEntity.ok(userService.updateProfile(principal, request));
+    }
+
+    @PostMapping("/me/reset-challenge")
+    public ResponseEntity<UserResponse> resetChallenge(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @RequestBody(required = false) ResetChallengeRequest request) {
+        return ResponseEntity.ok(userService.resetChallenge(principal, request));
     }
 }

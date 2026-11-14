@@ -244,6 +244,10 @@ export default function Profile() {
   const [analyticsData, setAnalyticsData] = useState(null);
 
   const [restartModal, setRestartModal] = useState(false);
+  const [durationModal, setDurationModal] = useState(false);
+  const [selectedDays, setSelectedDays] = useState(user?.challengeDays || 75);
+  const [customDaysVal, setCustomDaysVal] = useState("");
+  const [isCustomDuration, setIsCustomDuration] = useState(false);
   const [passwordModal, setPasswordModal] = useState(false);
   const [deleteModal, setDeleteModal] = useState(false);
   const [deleteInput, setDeleteInput] = useState("");
@@ -279,8 +283,9 @@ export default function Profile() {
     const start = new Date(challengeStartDate + "T12:00:00");
     const now = new Date();
     const diff = Math.ceil((now - start) / 86400000);
-    return Math.max(1, Math.min(diff, 75));
-  }, [challengeStartDate]);
+    const maxDays = user?.challengeDays || 75;
+    return Math.max(1, Math.min(diff, maxDays));
+  }, [challengeStartDate, user?.challengeDays]);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
 
@@ -322,13 +327,39 @@ export default function Profile() {
     setDeleteInput("");
   };
 
-  const handleRestart = (mode) => {
-    setStatusMsg(
-        mode === "keep"
-            ? "Restarted from Day 1 — history preserved."
-            : "Fresh start — challenge day, streak, and achievements reset."
-    );
-    setRestartModal(false);
+  const handleRestart = async (mode) => {
+    try {
+      const res = await api.post("/users/me/reset-challenge", { mode });
+      setUser(res.data);
+      localStorage.setItem("sprout_user", JSON.stringify(res.data));
+      setStatusMsg(
+          mode === "keep"
+              ? "Restarted from Day 1 — streak and history preserved."
+              : "Fresh start — challenge day, streak, and achievements reset."
+      );
+    } catch {
+      setStatusMsg("Couldn't restart challenge right now. Please try again.");
+    } finally {
+      setRestartModal(false);
+    }
+  };
+
+  const handleUpdateDuration = async (e) => {
+    e?.preventDefault();
+    const targetDays = isCustomDuration ? parseInt(customDaysVal, 10) : selectedDays;
+    if (!targetDays || targetDays < 1 || targetDays > 365) {
+      setStatusMsg("Please choose a challenge duration between 1 and 365 days.");
+      return;
+    }
+    try {
+      const res = await api.patch("/users/me", { challengeDays: targetDays });
+      setUser(res.data);
+      localStorage.setItem("sprout_user", JSON.stringify(res.data));
+      setStatusMsg(`Challenge duration updated to ${targetDays} days.`);
+      setDurationModal(false);
+    } catch {
+      setStatusMsg("Couldn't update challenge duration.");
+    }
   };
 
   const handleConnectCalendar = async () => {
@@ -450,11 +481,29 @@ export default function Profile() {
 
           <Section
               title="Challenge"
-              action={<Btn small variant="ghost" onClick={() => setRestartModal(true)}>Restart</Btn>}
+              action={
+                <div style={{ display: "flex", gap: 8 }}>
+                  <Btn
+                      small
+                      variant="ghost"
+                      onClick={() => {
+                        setSelectedDays(user?.challengeDays || 75);
+                        setIsCustomDuration(false);
+                        setCustomDaysVal("");
+                        setDurationModal(true);
+                      }}
+                  >
+                    Change days
+                  </Btn>
+                  <Btn small variant="ghost" onClick={() => setRestartModal(true)}>
+                    Restart
+                  </Btn>
+                </div>
+              }
           >
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
               <StatTile label="Current Day" value={challengeDay} />
-              <StatTile label="Length" value="75 days" />
+              <StatTile label="Target Length" value={`${user?.challengeDays || 75} days`} />
               <StatTile
                   label="Start Date"
                   value={challengeStartDate || "—"}
@@ -649,6 +698,100 @@ export default function Profile() {
         </Section>
 
         {/* ── Modals ── */}
+
+        {/* Change challenge duration */}
+        {durationModal && (
+            <Modal
+                title="Change challenge duration"
+                description="Set your target challenge length. Your streak and progress will remain intact."
+                onClose={() => setDurationModal(false)}
+            >
+              <form onSubmit={handleUpdateDuration} style={{ display: "grid", gap: 14 }}>
+                <div style={{ display: "grid", gap: 8 }}>
+                  {[
+                    { days: 30, label: "30 Days (Sprint)" },
+                    { days: 75, label: "75 Days (Standard)" },
+                    { days: 100, label: "100 Days (Century)" },
+                  ].map(({ days, label }) => {
+                    const isSelected = !isCustomDuration && selectedDays === days;
+                    return (
+                        <div
+                            key={days}
+                            onClick={() => {
+                              setSelectedDays(days);
+                              setIsCustomDuration(false);
+                            }}
+                            style={{
+                              padding: "12px 14px",
+                              borderRadius: 12,
+                              border: isSelected ? "2px solid #C85C22" : "1px solid var(--border)",
+                              background: isSelected ? "rgba(200,92,34,0.08)" : "var(--surface-2)",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "space-between",
+                              cursor: "pointer",
+                              fontWeight: isSelected ? 700 : 500,
+                              color: "var(--text)",
+                              fontSize: "0.9rem",
+                            }}
+                        >
+                          <span>{label}</span>
+                          {isSelected && <span style={{ color: "#C85C22", fontWeight: 800 }}>✓</span>}
+                        </div>
+                    );
+                  })}
+
+                  <div
+                      onClick={() => setIsCustomDuration(true)}
+                      style={{
+                        padding: "12px 14px",
+                        borderRadius: 12,
+                        border: isCustomDuration ? "2px solid #C85C22" : "1px solid var(--border)",
+                        background: isCustomDuration ? "rgba(200,92,34,0.08)" : "var(--surface-2)",
+                        cursor: "pointer",
+                      }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <span style={{ fontWeight: isCustomDuration ? 700 : 500, color: "var(--text)", fontSize: "0.9rem" }}>
+                        Custom number of days
+                      </span>
+                      {isCustomDuration && <span style={{ color: "#C85C22", fontWeight: 800 }}>✓</span>}
+                    </div>
+                    {isCustomDuration && (
+                        <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 8 }}>
+                          <input
+                              type="number"
+                              min="1"
+                              max="365"
+                              placeholder="e.g. 60"
+                              value={customDaysVal}
+                              onChange={(e) => setCustomDaysVal(e.target.value)}
+                              autoFocus
+                              onClick={(e) => e.stopPropagation()}
+                              style={{
+                                width: 120,
+                                padding: "7px 11px",
+                                borderRadius: 8,
+                                border: "1px solid var(--border)",
+                                background: "var(--surface-card)",
+                                color: "var(--text)",
+                                fontSize: "0.9rem",
+                                outline: "none",
+                              }}
+                          />
+                          <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>days (1–365)</span>
+                        </div>
+                    )}
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 8 }}>
+                  <Btn variant="ghost" small type="button" onClick={() => setDurationModal(false)}>Cancel</Btn>
+                  <Btn small type="submit">Save duration</Btn>
+                </div>
+              </form>
+            </Modal>
+        )}
 
         {/* Restart challenge */}
         {restartModal && (
