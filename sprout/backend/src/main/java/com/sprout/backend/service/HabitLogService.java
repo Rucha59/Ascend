@@ -32,6 +32,23 @@ public class HabitLogService {
     public HabitLogResponse markLog(UserPrincipal principal, Long habitId, LocalDate date, MarkHabitLogRequest req) {
         Habit habit = getOwnedHabit(principal.getId(), habitId);
         LocalDate logDate = date != null ? date : LocalDate.now();
+
+        // PENDING means resetting or unchecking the habit for the day (removes the log entry)
+        if (req.status() != null && "PENDING".equalsIgnoreCase(req.status().trim())) {
+            habitLogRepository.findByHabitIdAndLogDate(habit.getId(), logDate)
+                    .ifPresent(habitLogRepository::delete);
+            return new HabitLogResponse(
+                    null,
+                    habit.getId(),
+                    logDate,
+                    "PENDING",
+                    null,
+                    List.of(),
+                    List.of(),
+                    null
+            );
+        }
+
         HabitStatus status = parseStatus(req.status());
 
         HabitLog log = habitLogRepository.findByHabitIdAndLogDate(habit.getId(), logDate)
@@ -45,6 +62,13 @@ public class HabitLogService {
         log.setNote(req.note());
 
         return HabitMapper.toResponse(habitLogRepository.save(log));
+    }
+
+    public void deleteLog(UserPrincipal principal, Long habitId, LocalDate date) {
+        Habit habit = getOwnedHabit(principal.getId(), habitId);
+        LocalDate logDate = date != null ? date : LocalDate.now();
+        habitLogRepository.findByHabitIdAndLogDate(habit.getId(), logDate)
+                .ifPresent(habitLogRepository::delete);
     }
 
     public List<HabitLogResponse> getHistory(UserPrincipal principal, Long habitId, LocalDate from, LocalDate to) {

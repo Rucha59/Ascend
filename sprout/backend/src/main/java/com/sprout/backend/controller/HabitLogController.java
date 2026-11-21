@@ -31,6 +31,15 @@ public class HabitLogController {
         return ResponseEntity.ok(habitLogService.markLog(principal, habitId, date, request));
     }
 
+    @DeleteMapping
+    public ResponseEntity<Void> delete(
+            @AuthenticationPrincipal UserPrincipal principal,
+            @PathVariable Long habitId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        habitLogService.deleteLog(principal, habitId, date);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping
     public ResponseEntity<List<HabitLogResponse>> history(
             @AuthenticationPrincipal UserPrincipal principal,
